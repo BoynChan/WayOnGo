@@ -29,6 +29,11 @@ func main() {
 	swap(&a, &b)
 	//可以看到我们的交换并不是交换地址,而是取到地址后交换他们的值
 	fmt.Printf("after swap a,b %d,%d \t %p,%p\n", a, b, &a, &b)
+
+	//还可以用new操作符来创建指针
+	str := new(string)
+	*str = "Go语言"
+	fmt.Println(*str)
 }
 
 func swap(a, b *int) {
