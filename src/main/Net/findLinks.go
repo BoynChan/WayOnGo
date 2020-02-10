@@ -98,3 +98,26 @@ func countWordsAndImages(n *html.Node) (words, images int) {
 	}
 	return
 }
+
+/*
+接收一个HTML结点数以及任意数量的标签名,返回跟这些便签名匹配的所有元素
+*/
+func ElementsByTagName(doc *html.Node, name ...string) []*html.Node {
+	var result []*html.Node
+	if doc.Type == html.ElementNode && contains(doc.Data, name) {
+		result = append(result, doc)
+	}
+	for c := doc.FirstChild; c != nil; c = c.NextSibling {
+		result = append(result, ElementsByTagName(c, name...)...)
+	}
+	return result
+}
+
+func contains(name string, list []string) bool {
+	for _, v := range list {
+		if name == v {
+			return true
+		}
+	}
+	return false
+}

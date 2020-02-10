@@ -21,3 +21,11 @@ func TestCountWordsAndImages(t *testing.T) {
 	words, images, _ := CountWordsAndImages("http://gopl.io")
 	fmt.Println(words, images)
 }
+
+func TestElementsByTagName(t *testing.T) {
+	node, _ := getPageRootNode("http://gopl.io")
+	name := ElementsByTagName(node, "img")
+	for _, v := range name {
+		fmt.Println(v.Data, v.Attr)
+	}
+}
