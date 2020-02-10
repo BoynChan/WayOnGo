@@ -44,6 +44,21 @@ func fetchByRoutine(url string, ch chan<- string) {
 
 }
 
+func FetchAndOutput(url string) []byte {
+	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
+		url = "http://" + url
+	}
+	resp, err := http.Get(url)
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Fetch: %v\n", err)
+		os.Exit(1)
+	}
+	content := make([]byte, resp.ContentLength)
+	_, _ = resp.Body.Read(content)
+	_ = resp.Body.Close()
+	return content
+}
+
 func Fetch(args []string) {
 	for _, url := range args {
 		if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
