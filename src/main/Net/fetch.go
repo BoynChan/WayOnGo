@@ -48,14 +48,14 @@ func FetchAndOutput(url string) []byte {
 	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
 		url = "http://" + url
 	}
+
 	resp, err := http.Get(url)
+	defer resp.Body.Close()
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Fetch: %v\n", err)
 		os.Exit(1)
 	}
-	content := make([]byte, resp.ContentLength)
-	_, _ = resp.Body.Read(content)
-	_ = resp.Body.Close()
+	content, _ := ioutil.ReadAll(resp.Body)
 	return content
 }
 

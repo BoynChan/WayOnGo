@@ -2,4 +2,4 @@
 *.exe
 *.png
 *.log
-/src/golang/
+/src/golang.org/
