@@ -3,3 +3,5 @@
 *.png
 *.log
 /src/golang.org/
+/pkg
+/bin
