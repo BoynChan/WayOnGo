@@ -14,3 +14,7 @@ func TestPipeline1(t *testing.T) {
 func TestPipeline2(t *testing.T) {
 	pipeline2()
 }
+
+func TestPipeline3(t *testing.T) {
+	pipeline3()
+}
