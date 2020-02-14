@@ -19,7 +19,11 @@ func FindLinks(url string) ([]string, error) {
 
 func getPageRootNode(url string) (*html.Node, error) {
 	resp, err := http.Get(url)
-	defer resp.Body.Close()
+	defer func() {
+		if resp != nil {
+			resp.Body.Close()
+		}
+	}()
 	if err != nil {
 		return nil, err
 	}
