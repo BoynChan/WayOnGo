@@ -19,7 +19,7 @@ func pipeline3() {
 /*
 计数器,通道只会用于输出
 */
-func counter(out chan int) {
+func counter(out chan<- int) {
 	for x := 0; x < 10; x++ {
 		out <- x
 	}
@@ -29,7 +29,7 @@ func counter(out chan int) {
 /*
 平方器,有一个用于输入的管道和输出的管道
 */
-func squarer(out, in chan int) {
+func squarer(out chan<- int, in <-chan int) {
 	for num := range in {
 		out <- num * num
 	}
@@ -39,7 +39,7 @@ func squarer(out, in chan int) {
 /*
 打印器,只有一个用于输入的管道
 */
-func printer(in chan int) {
+func printer(in <-chan int) {
 	for num := range in {
 		fmt.Println(num)
 	}
