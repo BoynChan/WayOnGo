@@ -1,4 +1,4 @@
-package main
+package echo
 
 import (
 	"io"
@@ -13,7 +13,7 @@ author:Boyn
 date:2020/2/14
 */
 
-func main() {
+func NetCat3() {
 	conn, err := net.Dial("tcp", "localhost:8999")
 	if err != nil {
 		log.Fatal(err)
