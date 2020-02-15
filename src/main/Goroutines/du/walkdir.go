@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 /**
@@ -14,11 +15,29 @@ author:Boyn
 date:2020/2/15
 */
 
-func WalkDir(dir string, fileSizes chan<- int64) {
+func WalkDir(initDir []string) {
+	fileSizes := make(chan int64)
+	used := time.Now()
+	go func() {
+		for _, root := range initDir {
+			doWalkDir(root, fileSizes)
+		}
+		close(fileSizes)
+	}()
+	var nfiles, nbytes int64
+	for size := range fileSizes {
+		nbytes += size
+		nfiles++
+	}
+	printDiskUsage(nfiles, nbytes)
+	fmt.Printf("Time Used:%.2f ms", float64(used.Nanosecond())/1000000)
+}
+
+func doWalkDir(dir string, fileSizes chan<- int64) {
 	for _, entry := range dirents(dir) {
 		if entry.IsDir() {
 			subdir := filepath.Join(dir, entry.Name())
-			WalkDir(subdir, fileSizes)
+			doWalkDir(subdir, fileSizes)
 		} else {
 			fileSizes <- entry.Size()
 		}
@@ -35,4 +54,8 @@ func dirents(dir string) []os.FileInfo {
 		return nil
 	}
 	return entries
+}
+
+func printDiskUsage(nfiles, nbytes int64) {
+	fmt.Printf("%d files : %.1f MB Uses\n", nfiles, float64(nbytes)/1e6)
 }
