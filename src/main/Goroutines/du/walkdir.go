@@ -17,20 +17,32 @@ date:2020/2/15
 
 func WalkDir(initDir []string) {
 	fileSizes := make(chan int64)
-	used := time.Now()
 	go func() {
 		for _, root := range initDir {
 			doWalkDir(root, fileSizes)
 		}
 		close(fileSizes)
 	}()
+
+	// 为了显示进度,所以每500ms显示一次收集进度
+	tick := time.Tick(500 * time.Millisecond)
+
 	var nfiles, nbytes int64
-	for size := range fileSizes {
-		nbytes += size
-		nfiles++
+loop:
+	for {
+		select {
+		case size, ok := <-fileSizes:
+			if !ok {
+				break loop
+			}
+			nfiles++
+			nbytes += size
+		case <-tick:
+			printDiskUsage(nfiles, nbytes)
+		}
 	}
 	printDiskUsage(nfiles, nbytes)
-	fmt.Printf("Time Used:%.2f ms", float64(used.Nanosecond())/1000000)
+	fmt.Println()
 }
 
 func doWalkDir(dir string, fileSizes chan<- int64) {

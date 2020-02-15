@@ -10,5 +10,5 @@ date:2020/2/15
 */
 
 func TestWalkDir(t *testing.T) {
-	WalkDir([]string{"F:\\Code"})
+	WalkDir([]string{"F://"})
 }
