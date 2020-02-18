@@ -1,5 +1,7 @@
 package memo
 
+import "errors"
+
 /**
 并发的非阻塞缓存
 author:Boyn
@@ -26,6 +28,10 @@ type result struct {
 	err   error
 }
 
+var ErrStopGet = errors.New("function stopped")
+
+var cache = make(map[string]*entry)
+
 func New(f Func) *Memo {
 	memo := &Memo{requests: make(chan request)}
 	go memo.server(f)
@@ -39,12 +45,23 @@ func (memo *Memo) Get(key string) (interface{}, error) {
 	return res.value, res.err
 }
 
+func (memo *Memo) TryGet(key string, done chan interface{}) (interface{}, error) {
+	response := make(chan result)
+	memo.requests <- request{key, response}
+	select {
+	case res := <-response:
+		return res.value, res.err
+	case <-done:
+		delete(cache, key)
+		return nil, ErrStopGet
+	}
+}
+
 func (memo *Memo) Close() {
 	close(memo.requests)
 }
 
 func (memo *Memo) server(f Func) {
-	cache := make(map[string]*entry)
 	for req := range memo.requests {
 		e := cache[req.key]
 		if e == nil {
