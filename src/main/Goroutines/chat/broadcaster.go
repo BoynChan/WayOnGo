@@ -8,13 +8,13 @@ date:2020/2/15
 */
 
 var (
-	entering = make(chan client) // 监控客户端进入的消息
-	leaving  = make(chan client) // 监控客户端离开的消息
-	messages = make(chan string) // 掌握所有客户端发出的消息
+	entering = make(chan client)       // 监控客户端进入的消息
+	leaving  = make(chan client)       // 监控客户端离开的消息
+	messages = make(chan string)       // 掌握所有客户端发出的消息
+	clients  = make(map[string]client) //掌握所有客户端消息
 )
 
 func broadcaster() {
-	clients := make(map[string]client)
 	for {
 		select {
 		case msg := <-messages:

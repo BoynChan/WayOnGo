@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"net"
+	"time"
 )
 
 /**
@@ -22,11 +23,13 @@ func handleConn(conn net.Conn) {
 		conn.Close()
 	}
 	messages <- name + " has arrived"
-	cli := client{ip: who, name: name, channel: ch, conn: conn}
+	cli := client{ip: who, name: name, channel: ch, conn: conn, lastSend: time.Now()}
 	entering <- cli
 
 	input := bufio.NewScanner(conn)
 	for input.Scan() {
+		//更新最后发送消息的时间
+		cli.lastSend = time.Now()
 		messages <- name + ":" + input.Text()
 	}
 	leaving <- cli
