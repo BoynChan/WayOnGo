@@ -1,11 +1,11 @@
 package chat
 
+import "log"
+
 /**
 author:Boyn
 date:2020/2/15
 */
-
-type client chan<- string //定义一个输出channel,表示向客户端中输出消息
 
 var (
 	entering = make(chan client) // 监控客户端进入的消息
@@ -14,18 +14,22 @@ var (
 )
 
 func broadcaster() {
-	clients := make(map[client]bool)
+	clients := make(map[string]client)
 	for {
 		select {
 		case msg := <-messages:
-			for cli := range clients {
-				cli <- msg
+			log.Println(msg)
+			for _, cli := range clients {
+				cli.channel <- msg
 			}
 		case cli := <-entering:
-			clients[cli] = true
+			log.Printf("%s login. ip:%s", cli.name, cli.ip)
+			//使用客户端的ip作为键
+			clients[cli.ip] = cli
 		case cli := <-leaving:
-			delete(clients, cli)
-			close(cli)
+			delete(clients, cli.ip)
+			close(cli.channel)
+			_ = cli.conn.Close()
 		}
 	}
 }
