@@ -20,6 +20,7 @@ func Serve(port int) {
 		log.Fatal(err)
 	}
 	go broadcaster()
+	go checkFreeAndClose()
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
