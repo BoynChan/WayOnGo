@@ -1,7 +1,5 @@
 package memo
 
-import "sync"
-
 /**
 并发的非阻塞缓存
 author:Boyn
@@ -12,10 +10,13 @@ type entry struct {
 	ready chan int // 当结果准备好时,会将通道关闭.
 }
 
+type request struct {
+	key      string
+	response chan<- result
+}
+
 type Memo struct {
-	f     Func
-	mu    sync.Mutex
-	cache map[string]*entry
+	requests chan request
 }
 
 type Func func(key string) (interface{}, error)
@@ -26,32 +27,43 @@ type result struct {
 }
 
 func New(f Func) *Memo {
-	return &Memo{
-		f:     f,
-		cache: make(map[string]*entry),
-	}
+	memo := &Memo{requests: make(chan request)}
+	go memo.server(f)
+	return memo
 }
 
 func (memo *Memo) Get(key string) (interface{}, error) {
-	memo.mu.Lock()
-	e := memo.cache[key]
+	response := make(chan result)
+	memo.requests <- request{key, response}
+	res := <-response
+	return res.value, res.err
+}
 
-	//当没有缓存的时候
-	if e == nil {
-		// 在这里使用了延迟处理的思想,先用entry作为占位,但此时f函数运行还没有出结果
-		// 但是cache[key]处已经有赋值了.然后可以解锁并运行函数
-		// 当后面有其他协程要进入时,可以获取到e的值不为空,但是会阻塞在<-e.ready处
-		// 当请求完毕后,会关闭ready通道,使所有请求通道输出的协程停止阻塞
-		e = &entry{
-			ready: make(chan int),
+func (memo *Memo) Close() {
+	close(memo.requests)
+}
+
+func (memo *Memo) server(f Func) {
+	cache := make(map[string]*entry)
+	for req := range memo.requests {
+		e := cache[req.key]
+		if e == nil {
+			e = &entry{
+				ready: make(chan int),
+			}
+			cache[req.key] = e
+			go e.call(f, req.key)
 		}
-		memo.cache[key] = e
-		memo.mu.Unlock()
-		e.res.value, e.res.err = memo.f(key)
-		close(e.ready) // 向所有在这个key处等待结果阻塞的协程发出信号,使其能获取结果
-	} else {
-		memo.mu.Unlock()
-		<-e.ready
+		go e.deliver(req.response)
 	}
-	return e.res.value, e.res.err
+}
+
+func (e *entry) call(f Func, key string) {
+	e.res.value, e.res.err = f(key)
+	close(e.ready)
+}
+
+func (e *entry) deliver(response chan<- result) {
+	<-e.ready
+	response <- e.res
 }
