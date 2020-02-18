@@ -11,9 +11,10 @@ import (
 author:Boyn
 date:2020/2/15
 */
+const clientChannelBufferSize = 10
 
 func handleConn(conn net.Conn) {
-	ch := make(chan string)
+	ch := make(chan string, clientChannelBufferSize)
 	go clientWriter(conn, ch)
 
 	who := conn.RemoteAddr().String()
