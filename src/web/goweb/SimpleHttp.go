@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"strings"
@@ -23,8 +24,21 @@ func sayHelloName(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello!")
 }
 
+func login(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	fmt.Println("Method:", r.Method)
+	if r.Method == "GET" {
+		t, _ := template.ParseFiles("F:\\Code\\Go\\LearningGo\\src\\web\\goweb\\page\\login.gtpl")
+		t.Execute(w, nil)
+	} else {
+		fmt.Printf("username:%s\n", r.Form["username"])
+		fmt.Printf("password:%s\n", r.Form["password"])
+	}
+}
+
 func main() {
 	http.HandleFunc("/", sayHelloName)
+	http.HandleFunc("/login", login)
 	err := http.ListenAndServe(":8009", nil)
 	if err != nil {
 		log.Fatal(err)
