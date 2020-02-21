@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -36,9 +38,30 @@ func login(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func upload(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		r.ParseMultipartForm(32 << 20)
+		file, handler, err := r.FormFile("uploadFile")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer file.Close()
+		fmt.Fprintf(w, "%v", handler.Header)
+		f, err := os.OpenFile("F:\\Code\\Go\\LearningGo\\src\\web\\goweb\\files\\"+handler.Filename, os.O_CREATE|os.O_WRONLY, 0666)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer f.Close()
+		io.Copy(f, file)
+	}
+}
+
 func main() {
 	http.HandleFunc("/", sayHelloName)
 	http.HandleFunc("/login", login)
+	http.HandleFunc("/upload", upload)
 	err := http.ListenAndServe(":8009", nil)
 	if err != nil {
 		log.Fatal(err)
