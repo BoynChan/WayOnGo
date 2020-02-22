@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>websocket</title>
+</head>
+<body>
+<script>
+    let sock = null;
+    let wsuri = "ws://localhost:1234";
+    window.onload = function () {
+        console.log("onload");
+        sock = new WebSocket(wsuri);
+        sock.onopen = function () {
+            console.log("WebSocket 连接成功")
+        };
+        sock.onclose = function () {
+            console.log("WebSocket 断开连接")
+        };
+
+        sock.onmessage = function (msg) {
+            console.log(msg.data);
+        };
+
+    };
+    function send() {
+        let msg = document.getElementById("message").value;
+        sock.send(msg)
+    }
+</script>
+<form>
+    <p>
+        Message: <input id="message" type="text" value="Hello,World">
+
+    </p>
+
+</form>
+<button onclick="send();">发送消息</button>
+</body>
+</html>
