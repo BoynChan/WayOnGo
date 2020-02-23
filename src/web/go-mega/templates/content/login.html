@@ -1,0 +1,15 @@
+{{define "content"}}
+    <h1>Login</h1>
+    <form action="/login" method="post" name="login">
+        <p><input type="text" name="username" value="" placeholder="输入用户名"></p>
+        <p><input type="password" name="password" value="" placeholder="输入密码"></p>
+        <p><input type="submit" value="登录"></p>
+    </form>
+    {{if .Errs}}
+        <ul>
+            {{ range .Errs}}
+                <li>{{.}}</li>
+            {{end}}
+        </ul>
+    {{end}}
+{{end}}

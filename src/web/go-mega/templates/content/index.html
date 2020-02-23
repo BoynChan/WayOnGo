@@ -1,21 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    {{if .Title}}
-        <title>{{.Title}} Page- Boyn</title>
-    {{else}}
-        <title>Welcome Page- Boyn</title>
-    {{end}}
-</head>
-<body>
 {{define "content"}}
     <h1>Hello! {{.User.Username}}</h1>
-    <div>
         {{range .Posts}}
             <div><p>{{ .User.Username}} -- {{.Title}}</p></div>
         {{end}}
-    </div>
 {{end}}
-</body>
-</html>
