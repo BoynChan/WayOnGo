@@ -9,9 +9,12 @@ import "web/go-mega/model"
 // 包含文章列表及其作者
 type ProfileViewModel struct {
 	BaseViewModel
-	Posts       []model.Post
-	ProfileUser model.User
-	Editable    bool
+	Posts          []model.Post // 文章列表
+	ProfileUser    model.User   // 当前页面用户
+	Editable       bool         // 是否可以编辑
+	IsFollow       bool         // 是否被关注
+	FollowersCount int          // 关注者数量
+	FollowingCount int          // 关注的人数量
 }
 
 type ProfileViewModelOp struct {
@@ -23,14 +26,35 @@ type ProfileViewModelOp struct {
 func (ProfileViewModelOp) GetVM(sUser, pUser string) (ProfileViewModel, error) {
 	v := ProfileViewModel{}
 	v.SetTitle("Profile")
-	u1, err := model.GetUserByUsername(pUser)
+	p1, err := model.GetUserByUsername(pUser)
 	if err != nil {
 		return v, err
 	}
-	posts, _ := model.GetPostsByUserID(u1.ID)
-	v.ProfileUser = *u1
+	posts, _ := model.GetPostsByUserID(p1.ID)
+	v.ProfileUser = *p1
 	v.Posts = *posts
 	v.Editable = sUser == pUser
+	v.IsFollow = p1.IsFollowedByUser(sUser)
+	v.FollowersCount = p1.FollowersCount()
+	v.FollowingCount = p1.FollowingCount()
 	v.SetCurrentUser(sUser)
 	return v, nil
+}
+
+// a关注了b
+func Follow(a, b string) error {
+	u, err := model.GetUserByUsername(a)
+	if err != nil {
+		return nil
+	}
+	return u.Follow(b)
+}
+
+// a取消关注了b
+func UnFollow(a, b string) error {
+	u, err := model.GetUserByUsername(a)
+	if err != nil {
+		return nil
+	}
+	return u.Unfollow(b)
 }

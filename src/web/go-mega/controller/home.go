@@ -25,6 +25,8 @@ func (h home) registerRoutes() {
 	r.HandleFunc("/logout", middleAuth(logoutHandler))
 	r.HandleFunc("/user/{username}", middleAuth(profileHandler))
 	r.HandleFunc("/profile_edit", middleAuth(profileEditHandler))
+	r.HandleFunc("/follow/{username}", middleAuth(followHandler))
+	r.HandleFunc("/unfollow/{username}", middleAuth(unFollowHandler))
 
 	http.Handle("/", r)
 }
@@ -145,4 +147,30 @@ func profileEditHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		http.Redirect(w, r, fmt.Sprintf("/user/%s", username), 302)
 	}
+}
+
+func followHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	pUser := vars["username"]
+	sUser, _ := getSessionUser(r)
+	err := vm.Follow(sUser, pUser)
+	if err != nil {
+		log.Println("[followHandler] 关注失败:", err)
+		w.Write([]byte("关注失败"))
+		return
+	}
+	http.Redirect(w, r, fmt.Sprintf("/user/%s", pUser), http.StatusSeeOther)
+}
+
+func unFollowHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	pUser := vars["username"]
+	sUser, _ := getSessionUser(r)
+	err := vm.UnFollow(sUser, pUser)
+	if err != nil {
+		log.Println("[unFollowHandler] 取消关注失败:", err)
+		w.Write([]byte("取消关注失败"))
+		return
+	}
+	http.Redirect(w, r, fmt.Sprintf("/user/%s", pUser), http.StatusSeeOther)
 }
