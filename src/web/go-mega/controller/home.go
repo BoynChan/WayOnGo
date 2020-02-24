@@ -24,6 +24,7 @@ func (h home) registerRoutes() {
 	r.HandleFunc("/register", registerHandler)
 	r.HandleFunc("/logout", middleAuth(logoutHandler))
 	r.HandleFunc("/user/{username}", middleAuth(profileHandler))
+	r.HandleFunc("/profile_edit", middleAuth(profileEditHandler))
 
 	http.Handle("/", r)
 }
@@ -120,4 +121,28 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	templates[temName].Execute(w, &v)
+}
+
+// 编辑个人资料的handler
+// get方法会返回个人资料VM
+// post会更新个人资料并重定向至个人页面
+func profileEditHandler(w http.ResponseWriter, r *http.Request) {
+	temName := "profile_edit.html"
+	username, _ := getSessionUser(r)
+	vop := vm.ProfileEditViewModelOP{}
+	v := vop.GetVM(username)
+	if r.Method == http.MethodGet {
+		templates[temName].Execute(w, &v)
+	}
+	if r.Method == http.MethodPost {
+		r.ParseForm()
+		aboutme := r.Form.Get("aboutme")
+		log.Println("[ProfileEditHandler] about me :", aboutme)
+		if err := vm.UpdateAboutMe(username, aboutme); err != nil {
+			log.Println("[ProfileEditHandler] err :", err)
+			w.Write([]byte("更新时出现错误"))
+			return
+		}
+		http.Redirect(w, r, fmt.Sprintf("/user/%s", username), 302)
+	}
 }

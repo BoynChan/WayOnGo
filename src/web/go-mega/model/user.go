@@ -1,5 +1,10 @@
 package model
 
+import (
+	"fmt"
+	"time"
+)
+
 // Author:Boyn
 // Date:2020/2/23
 
@@ -11,6 +16,13 @@ type User struct {
 	PasswordHash string `gorm:"type:varchar(255)"`
 	Posts        []Post
 	Followers    []*User `gorm:"many2many:follower;association_jointable_foreignkey:follower_id"`
+	LastSeen     *time.Time
+	AboutMe      string `gorm:"type:varchar(255)"`
+	Avatar       string `gorm:"type:varchar(255)"`
+}
+
+func (u *User) SetAvatar(email string) {
+	u.Avatar = fmt.Sprintf("https://www.gravatar.com/avatar/%s?d=identicon", Md5(email))
 }
 
 func (u *User) SetPassword(pwd string) {
@@ -35,6 +47,25 @@ func AddUser(username, password, email string) error {
 		Username: username,
 		Email:    email,
 	}
+	user.SetAvatar(email)
 	user.SetPassword(password)
 	return db.Create(&user).Error
+}
+
+func UpdateUserByUsername(username string, contents map[string]interface{}) error {
+	item, err := GetUserByUsername(username)
+	if err != nil {
+		return err
+	}
+	return db.Model(item).Updates(contents).Error
+}
+
+func UpdateLastSeen(username string) error {
+	contents := map[string]interface{}{"last_seen": time.Now()}
+	return UpdateUserByUsername(username, contents)
+}
+
+func UpdateAboutMe(username, aboutMe string) error {
+	contents := map[string]interface{}{"about_me": aboutMe}
+	return UpdateUserByUsername(username, contents)
 }

@@ -11,6 +11,7 @@ type ProfileViewModel struct {
 	BaseViewModel
 	Posts       []model.Post
 	ProfileUser model.User
+	Editable    bool
 }
 
 type ProfileViewModelOp struct {
@@ -29,6 +30,7 @@ func (ProfileViewModelOp) GetVM(sUser, pUser string) (ProfileViewModel, error) {
 	posts, _ := model.GetPostsByUserID(u1.ID)
 	v.ProfileUser = *u1
 	v.Posts = *posts
+	v.Editable = sUser == pUser
 	v.SetCurrentUser(sUser)
 	return v, nil
 }
