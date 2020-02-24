@@ -16,6 +16,7 @@ var (
 	sessionName    string                        // session变量的名字
 	flashName      string                        // flash的名字,flash也是session中的一个键
 	store          *sessions.CookieStore         // session存储的位置
+	pageLimit      int                           // 一页中限制文章的条目数
 )
 
 // controller下的初始化函数
@@ -31,6 +32,9 @@ func init() {
 
 	// 设置flash的名字
 	flashName = "go-flash"
+
+	// 限制文章条目数为10
+	pageLimit = 10
 }
 
 // Startup func

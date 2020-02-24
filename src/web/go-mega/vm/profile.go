@@ -15,6 +15,7 @@ type ProfileViewModel struct {
 	IsFollow       bool         // 是否被关注
 	FollowersCount int          // 关注者数量
 	FollowingCount int          // 关注的人数量
+
 }
 
 type ProfileViewModelOp struct {
@@ -23,21 +24,26 @@ type ProfileViewModelOp struct {
 // 在这个函数中,包含了两个用户角色
 // sUser是当前登录的用户
 // pUser是我们准备要查看其个人主页的用户
-func (ProfileViewModelOp) GetVM(sUser, pUser string) (ProfileViewModel, error) {
+func (ProfileViewModelOp) GetVM(sUser, pUser string, page, limit int) (ProfileViewModel, error) {
 	v := ProfileViewModel{}
 	v.SetTitle("Profile")
 	p1, err := model.GetUserByUsername(pUser)
 	if err != nil {
 		return v, err
 	}
-	posts, _ := model.GetPostsByUserID(p1.ID)
+	posts, total, _ := model.GetPostsByUserIDPageAndLimit(p1.ID, page, limit)
 	v.ProfileUser = *p1
 	v.Posts = *posts
 	v.Editable = sUser == pUser
-	v.IsFollow = p1.IsFollowedByUser(sUser)
+	if !v.Editable {
+		// 先验证是否同一用户,如果是则不用进行是否关注的操作
+		// 减少一次数据库的查询
+		v.IsFollow = p1.IsFollowedByUser(sUser)
+	}
 	v.FollowersCount = p1.FollowersCount()
 	v.FollowingCount = p1.FollowingCount()
 	v.SetCurrentUser(sUser)
+	v.SetBasePageViewModel(total, page, limit)
 	return v, nil
 }
 

@@ -38,10 +38,11 @@ func (h home) registerRoutes() {
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	temName := "index.html"
 	vop := vm.IndexViewModelOp{}
+	page := getPage(r)
 	username, _ := getSessionUser(r)
 	if r.Method == http.MethodGet {
 		flash := getFlash(w, r)
-		v := vop.GetVM(username, flash)
+		v := vop.GetVM(username, flash, page, pageLimit)
 		templates[temName].Execute(w, &v)
 	}
 	if r.Method == http.MethodPost {
@@ -134,10 +135,11 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 func profileHandler(w http.ResponseWriter, r *http.Request) {
 	temName := "profile.html"
 	vars := mux.Vars(r)
+	page := getPage(r)
 	pUser := vars["username"]
 	sUser, _ := getSessionUser(r)
 	vop := vm.ProfileViewModelOp{}
-	v, err := vop.GetVM(sUser, pUser)
+	v, err := vop.GetVM(sUser, pUser, page, pageLimit)
 	if err != nil {
 		msg := fmt.Sprintf("用户 %s 不存在", pUser)
 		w.Write([]byte(msg))
