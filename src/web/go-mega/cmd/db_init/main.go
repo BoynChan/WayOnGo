@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"web/go-mega/model"
 
@@ -20,39 +19,24 @@ func main() {
 	db.DropTableIfExists(model.User{}, model.Post{})
 	db.CreateTable(model.User{}, model.Post{})
 
-	users := []model.User{
-		{
-			Username:     "bonfy",
-			PasswordHash: model.GeneratePasswordHash("abc123"),
-			Email:        "i@bonfy.im",
-			Avatar:       fmt.Sprintf("https://www.gravatar.com/avatar/%s?d=identicon", model.Md5("i@bonfy.im")),
-			Posts: []model.Post{
-				{Body: "Beautiful day in Portland!"},
-			},
-		},
-		{
-			Username:     "rene",
-			PasswordHash: model.GeneratePasswordHash("abc123"),
-			Email:        "rene@test.com",
-			Avatar:       fmt.Sprintf("https://www.gravatar.com/avatar/%s?d=identicon", model.Md5("rene@test.com")),
-			Posts: []model.Post{
-				{Body: "The Avengers movie was so cool!"},
-				{Body: "Sun shine is beautiful"},
-			},
-		},
-		{
-			Username:     "boyn",
-			PasswordHash: model.GeneratePasswordHash("123456"),
-			Email:        "1065547951@qq.com",
-			Avatar:       fmt.Sprintf("https://www.gravatar.com/avatar/%s?d=identicon", model.Md5("1065547951@qq.com")),
-			Posts: []model.Post{
-				{Body: "Go语言"},
-				{Body: "Web开发"},
-			},
-		},
-	}
+	model.AddUser("bonfy", "abc123", "i@bonfy.im")
+	model.AddUser("rene", "abc123", "rene@test.com")
+	model.AddUser("boyn", "123456", "1065547951@qq.com")
 
-	for _, u := range users {
-		db.Debug().Create(&u)
-	}
+	u1, _ := model.GetUserByUsername("bonfy")
+	u1.CreatePost("Beautiful day in Portland!")
+	model.UpdateAboutMe(u1.Username, `I'm the author of Go-Mega Tutorial you are reading now!`)
+
+	u2, _ := model.GetUserByUsername("rene")
+	u2.CreatePost("The Avengers movie was so cool!")
+	u2.CreatePost("Sun shine is beautiful")
+
+	u3, _ := model.GetUserByUsername("boyn")
+	u3.CreatePost("Go Mega-Web开发编程实战")
+	u3.CreatePost("Go语言")
+
+	u1.Follow(u2.Username)
+	u1.Follow(u3.Username)
+	u2.Follow(u3.Username)
+
 }
