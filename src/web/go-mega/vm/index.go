@@ -9,22 +9,26 @@ import (
 
 // 包含标题与文章的VM
 type IndexViewModel struct {
-	User model.User
 	BaseViewModel
 	Posts []model.Post
+	Flash string
 }
 
 // IndexViewModel的操作结构
 type IndexViewModelOp struct {
 }
 
-func (i IndexViewModelOp) GetVM(username string) IndexViewModel {
+func (i IndexViewModelOp) GetVM(username string, flash string) IndexViewModel {
 	user, _ := model.GetUserByUsername(username)
-	posts, _ := model.GetPostsByUserID(user.ID)
-	v := IndexViewModel{
-		User:          *user,
-		BaseViewModel: BaseViewModel{Title: "HomePage", CurrentUser: username},
-		Posts:         *posts,
-	}
+	// 获取关注者的文章
+	posts, _ := user.FollowingPosts()
+	v := IndexViewModel{BaseViewModel{}, *posts, flash}
+	v.SetTitle("HomePage")
+	v.SetCurrentUser(username)
 	return v
+}
+
+func CreatePost(username, post string) error {
+	u, _ := model.GetUserByUsername(username)
+	return u.CreatePost(post)
 }

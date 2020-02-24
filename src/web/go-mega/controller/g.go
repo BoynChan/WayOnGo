@@ -14,6 +14,7 @@ var (
 	homeController home                          // 定义homeController作为控制器
 	templates      map[string]*template.Template // templates是页面控制器,通过扫描templates文件夹下的文件,进行一一映射
 	sessionName    string                        // session变量的名字
+	flashName      string                        // flash的名字,flash也是session中的一个键
 	store          *sessions.CookieStore         // session存储的位置
 )
 
@@ -27,6 +28,9 @@ func init() {
 
 	//设置session的名字为go-mega,这个名字同时也会反映到cookie中
 	sessionName = "go-mega"
+
+	// 设置flash的名字
+	flashName = "go-flash"
 }
 
 // Startup func

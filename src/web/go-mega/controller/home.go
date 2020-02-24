@@ -31,14 +31,35 @@ func (h home) registerRoutes() {
 	http.Handle("/", r)
 }
 
-// 这个函数被registerRoutes()注册在homeController中,它注册的路径是'/'
-// 当访问到这个路径的时候,会使用这个函数来进行View返回
-// 根据已经登录的用户来获取它的用户名
+// 主页的handler
+// 主页目前的功能是可以显示最近发表的文章和发表新的文章
+// 当请求为GET时,返回规划的VM
+// 当请求为POST时,用户发布动态,将其插入到数据库中
 func indexHandler(w http.ResponseWriter, r *http.Request) {
+	temName := "index.html"
 	vop := vm.IndexViewModelOp{}
 	username, _ := getSessionUser(r)
-	v := vop.GetVM(username)
-	templates["index.html"].Execute(w, &v)
+	if r.Method == http.MethodGet {
+		flash := getFlash(w, r)
+		v := vop.GetVM(username, flash)
+		templates[temName].Execute(w, &v)
+	}
+	if r.Method == http.MethodPost {
+		r.ParseForm()
+		body := r.Form.Get("body")
+		errMessage := checkLen("Post", body, 1, 180)
+		if len(errMessage) != 0 {
+			setFlash(w, r, errMessage)
+		} else {
+			err := vm.CreatePost(username, body)
+			if err != nil {
+				log.Println("add Post error:", err)
+				w.Write([]byte("插入新文章失败"))
+				return
+			}
+		}
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
 }
 
 // 登录的处理函数
