@@ -9,6 +9,9 @@ import (
 // Date:2020/2/23
 type home struct{}
 
+// 注册 homeController 的路由
+// 在这里将其设置为home的方法,是因为通常有多个controller
+// 以示区分
 func (h home) registerRoutes() {
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/login", loginHandler)
@@ -23,6 +26,11 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	templates["index.html"].Execute(w, &v)
 }
 
+// 登录的处理函数
+// 如果是get请求,就返回登录的网页
+// 如果是post请求,就验证密码是否正确
+// 如果不正确,将错误信息发送到模板中,并返回登录模板网页
+// 如果正确,就设置缓存,并进行302重定向到首页
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	temName := "login.html"
 	vop := vm.LoginViewModelOp{}
@@ -52,11 +60,14 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// 登出的处理函数
+// 登出时,先将缓存清除,然后重定向到首页
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	clearSession(w, r)
 	http.Redirect(w, r, "/", 302)
 }
 
+// 验证用户名和密码是否正确
 func check(username, password string) bool {
 	if username == "boyn" && password == "123456" {
 		return true

@@ -15,6 +15,8 @@ func init() {
 }
 
 func getConfig(projectName string) {
+	// 在项目根目录和src/web/go-mega/config目录下查找配置文件
+	// 设置配置文件的名字是config
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
 	viper.AddConfigPath(".\\src\\web\\go-mega\\config")
@@ -25,10 +27,13 @@ func getConfig(projectName string) {
 
 }
 
+// 获取配置文件的密钥
 func GetSessionKey() string {
+
 	return viper.GetString("session.secret-key")
 }
 
+// 获取配置文件中mysql的内容,并拼接成字符串
 func GetMysqlConnectionString() string {
 	usr := viper.GetString("mysql.user")
 	pwd := viper.GetString("mysql.password")
