@@ -1,9 +1,12 @@
 package controller
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"web/go-mega/vm"
+
+	"github.com/gorilla/mux"
 )
 
 // Author:Boyn
@@ -14,10 +17,15 @@ type home struct{}
 // 在这里将其设置为home的方法,是因为通常有多个controller
 // 以示区分
 func (h home) registerRoutes() {
-	http.HandleFunc("/", middleAuth(indexHandler))
-	http.HandleFunc("/login", loginHandler)
-	http.HandleFunc("/register", registerHandler)
-	http.HandleFunc("/logout", middleAuth(logoutHandler))
+	r := mux.NewRouter()
+
+	r.HandleFunc("/", middleAuth(indexHandler))
+	r.HandleFunc("/login", loginHandler)
+	r.HandleFunc("/register", registerHandler)
+	r.HandleFunc("/logout", middleAuth(logoutHandler))
+	r.HandleFunc("/user/{username}", middleAuth(profileHandler))
+
+	http.Handle("/", r)
 }
 
 // 这个函数被registerRoutes()注册在homeController中,它注册的路径是'/'
@@ -93,4 +101,23 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/", 302)
 		}
 	}
+}
+
+// 关于用户个人资料的controller
+// 这里用到了动态路由的库
+// mux.Vars获取路由信息中被动态代理的消息,并通过map取出
+// pUser表示要查看个人档案的用户,sUser表示当前的用户
+func profileHandler(w http.ResponseWriter, r *http.Request) {
+	temName := "profile.html"
+	vars := mux.Vars(r)
+	pUser := vars["username"]
+	sUser, _ := getSessionUser(r)
+	vop := vm.ProfileViewModelOp{}
+	v, err := vop.GetVM(sUser, pUser)
+	if err != nil {
+		msg := fmt.Sprintf("用户 %s 不存在", pUser)
+		w.Write([]byte(msg))
+		return
+	}
+	templates[temName].Execute(w, &v)
 }

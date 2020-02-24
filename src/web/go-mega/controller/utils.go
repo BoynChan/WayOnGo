@@ -57,13 +57,10 @@ func getSessionUser(r *http.Request) (string, error) {
 		return "", err
 	}
 	val := session.Values["user"]
-	fmt.Println("val:", val)
 	username, ok := val.(string)
 	if !ok {
 		return "", errors.New("can not get session user")
 	}
-
-	fmt.Println("username:", username)
 	return username, nil
 }
 
