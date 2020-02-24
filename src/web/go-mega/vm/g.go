@@ -5,9 +5,14 @@ package vm
 
 // 包含标题的VM
 type BaseViewModel struct {
-	Title string
+	Title       string
+	CurrentUser string
 }
 
 func (v *BaseViewModel) SetTitle(title string) {
 	v.Title = title
+}
+
+func (v *BaseViewModel) SetCurrentUser(user string) {
+	v.CurrentUser = user
 }

@@ -6,9 +6,15 @@
 </head>
 <body>
 <div>
-    Blog:
-    <a href="/">Home</a>
-    <a href="/login">Login</a>
+    <div>
+        Blog:
+        <a href="/">Home</a>
+        {{if .CurrentUser}}
+            <a href="/logout">Logout</a>
+        {{else}}
+            <a href="/login">Login</a>
+        {{end}}
+    </div>
     {{template "content" .}}
 </div>
 </body>

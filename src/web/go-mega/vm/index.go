@@ -18,12 +18,12 @@ type IndexViewModel struct {
 type IndexViewModelOp struct {
 }
 
-func (i IndexViewModelOp) GetVM() IndexViewModel {
-	username, _ := model.GetUserByUsername("rene")
-	posts, _ := model.GetPostsByUserID(username.ID)
+func (i IndexViewModelOp) GetVM(username string) IndexViewModel {
+	user, _ := model.GetUserByUsername(username)
+	posts, _ := model.GetPostsByUserID(user.ID)
 	v := IndexViewModel{
-		User:          *username,
-		BaseViewModel: BaseViewModel{Title: "HomePage"},
+		User:          *user,
+		BaseViewModel: BaseViewModel{Title: "HomePage", CurrentUser: username},
 		Posts:         *posts,
 	}
 	return v

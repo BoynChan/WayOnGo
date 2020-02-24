@@ -13,16 +13,18 @@ type home struct{}
 // 在这里将其设置为home的方法,是因为通常有多个controller
 // 以示区分
 func (h home) registerRoutes() {
-	http.HandleFunc("/", indexHandler)
+	http.HandleFunc("/", middleAuth(indexHandler))
 	http.HandleFunc("/login", loginHandler)
-	http.HandleFunc("/logout", logoutHandler)
+	http.HandleFunc("/logout", middleAuth(logoutHandler))
 }
 
 // 这个函数被registerRoutes()注册在homeController中,它注册的路径是'/'
 // 当访问到这个路径的时候,会使用这个函数来进行View返回
+// 根据已经登录的用户来获取它的用户名
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	vop := vm.IndexViewModelOp{}
-	v := vop.GetVM()
+	username, _ := getSessionUser(r)
+	v := vop.GetVM(username)
 	templates["index.html"].Execute(w, &v)
 }
 
