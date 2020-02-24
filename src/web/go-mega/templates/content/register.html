@@ -1,0 +1,17 @@
+{{define "content"}}
+    <h1>注册</h1>
+    <form action="/register" method="post" name="register">
+        <p><input type="text" name="username" value="" placeholder="用户名"></p>
+        <p><input type="text" name="email" value="" placeholder="邮箱"></p>
+        <p><input type="password" name="password" value="" placeholder="密码"></p>
+        <p><input type="submit" value="注册"></p>
+    </form>
+    <p>已有账户?<a href="/login">点击登录</a></p>
+    {{ if .Errs}}
+        <ul>
+            {{range .Errs}}
+                <li>{{.}}</li>
+            {{end}}
+        </ul>
+    {{end}}
+{{end}}

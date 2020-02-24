@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 	"web/go-mega/vm"
 )
@@ -15,6 +16,7 @@ type home struct{}
 func (h home) registerRoutes() {
 	http.HandleFunc("/", middleAuth(indexHandler))
 	http.HandleFunc("/login", loginHandler)
+	http.HandleFunc("/register", registerHandler)
 	http.HandleFunc("/logout", middleAuth(logoutHandler))
 }
 
@@ -43,15 +45,9 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		username := r.Form.Get("username")
 		password := r.Form.Get("password")
-		if len(username) < 3 {
-			v.AddError("用户名过短")
-		}
-		if len(password) < 6 {
-			v.AddError("密码过短")
-		}
-		if !check(username, password) {
-			v.AddError("用户名与密码错误")
-		}
+
+		errs := checkLogin(username, password)
+		v.AddError(errs...)
 		if len(v.Errs) > 0 {
 			templates[temName].Execute(w, &v)
 		} else {
@@ -69,10 +65,32 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", 302)
 }
 
-// 验证用户名和密码是否正确
-func check(username, password string) bool {
-	if username == "boyn" && password == "123456" {
-		return true
+func registerHandler(w http.ResponseWriter, r *http.Request) {
+	temName := "register.html"
+	vop := vm.RegisterModelViewOp{}
+	v := vop.GetVM()
+	if r.Method == http.MethodGet {
+		templates[temName].Execute(w, &v)
+		return
 	}
-	return false
+	if r.Method == http.MethodPost {
+		r.ParseForm()
+		username := r.Form.Get("username")
+		password := r.Form.Get("password")
+		email := r.Form.Get("email")
+		errs := checkRegister(username, email, password)
+		v.AddError(errs...)
+
+		if len(v.Errs) > 0 {
+			templates[temName].Execute(w, &v)
+		} else {
+			if err := addUser(username, password, email); err != nil {
+				log.Println("add User error:", err)
+				w.Write([]byte("插入数据库错误"))
+				return
+			}
+			setSessionUser(w, r, username)
+			http.Redirect(w, r, "/", 302)
+		}
+	}
 }

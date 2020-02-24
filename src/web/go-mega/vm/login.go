@@ -16,7 +16,7 @@ type LoginViewModel struct {
 type LoginViewModelOp struct {
 }
 
-// 检查用户是否已经登录
+// 检查用户登录状态
 func CheckLogin(username, password string) bool {
 	user, err := model.GetUserByUsername(username)
 	if err != nil {

@@ -5,6 +5,7 @@
         <p><input type="password" name="password" value="" placeholder="输入密码"></p>
         <p><input type="submit" value="登录"></p>
     </form>
+    <p>新用户?<a href="/register">点击注册</a></p>
     {{if .Errs}}
         <ul>
             {{ range .Errs}}

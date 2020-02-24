@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"regexp"
+	"web/go-mega/vm"
 )
 
 // Author:Boyn
@@ -89,4 +91,88 @@ func clearSession(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	return nil
+}
+
+// 检查长度,字段名,字段域和最大最小长度都由调用者指定
+func checkLen(fieldName, fieldValue string, minLen, maxLen int) string {
+	lenField := len(fieldValue)
+	if lenField < minLen {
+		return fmt.Sprintf("%s field is too short, less than %d", fieldName, minLen)
+	}
+	if lenField > maxLen {
+		return fmt.Sprintf("%s field is too long, more than %d", fieldName, maxLen)
+	}
+	return ""
+}
+
+// 检查用户名长度
+func checkUsername(username string) string {
+	return checkLen("Username", username, 3, 20)
+}
+
+// 检查密码长度
+func checkPassword(password string) string {
+	return checkLen("Password", password, 6, 50)
+}
+
+// 正则匹配查看邮箱地址是否正确
+func checkEmail(email string) string {
+	if m, _ := regexp.MatchString(`^([\w\.\_]{2,10})@(\w{1,}).([a-z]{2,4})$`, email); !m {
+		return fmt.Sprintf("Email field not a valid email")
+	}
+	return ""
+}
+
+// 检查用户用户名与密码是否正确
+func checkUserPassword(username, password string) string {
+	if !vm.CheckLogin(username, password) {
+		return fmt.Sprintf("Username and password is not correct.")
+	}
+	return ""
+}
+
+// 检查用户是否存在
+func checkUserExist(username string) string {
+	if vm.CheckUserExist(username) {
+		return fmt.Sprintf("Username already exist, please choose another username")
+	}
+	return ""
+}
+
+// 检查登录时的参数
+func checkLogin(username, password string) []string {
+	var errs []string
+	if errCheck := checkUsername(username); len(errCheck) > 0 {
+		errs = append(errs, errCheck)
+	}
+	if errCheck := checkPassword(password); len(errCheck) > 0 {
+		errs = append(errs, errCheck)
+	}
+	if errCheck := checkUserPassword(username, password); len(errCheck) > 0 {
+		errs = append(errs, errCheck)
+	}
+	return errs
+}
+
+// 检查注册时的参数
+func checkRegister(username, email, password string) []string {
+	var errs []string
+	if errCheck := checkUsername(username); len(errCheck) > 0 {
+		errs = append(errs, errCheck)
+	}
+	if errCheck := checkPassword(password); len(errCheck) > 0 {
+		errs = append(errs, errCheck)
+	}
+	if errCheck := checkEmail(email); len(errCheck) > 0 {
+		errs = append(errs, errCheck)
+	}
+	if errCheck := checkUserExist(username); len(errCheck) > 0 {
+		errs = append(errs, errCheck)
+	}
+	return errs
+}
+
+// 添加新用户
+func addUser(username, password, email string) error {
+	return vm.AddUser(username, password, email)
 }
