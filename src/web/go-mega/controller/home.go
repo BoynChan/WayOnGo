@@ -44,10 +44,10 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		flash := getFlash(w, r)
 		v := vop.GetVM(username, flash, page, pageLimit)
-		templates[temName].Execute(w, &v)
+		_ = templates[temName].Execute(w, &v)
 	}
 	if r.Method == http.MethodPost {
-		r.ParseForm()
+		_ = r.ParseForm()
 		body := r.Form.Get("body")
 		errMessage := checkLen("Post", body, 1, 180)
 		if len(errMessage) != 0 {
@@ -56,7 +56,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 			err := vm.CreatePost(username, body)
 			if err != nil {
 				log.Println("add Post error:", err)
-				w.Write([]byte("插入新文章失败"))
+				_, _ = w.Write([]byte("插入新文章失败"))
 				return
 			}
 		}
@@ -74,18 +74,19 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	vop := vm.LoginViewModelOp{}
 	v := vop.GetVM()
 	if r.Method == http.MethodGet {
-		templates[temName].Execute(w, &v)
+		_ = templates[temName].Execute(w, &v)
 	} else if r.Method == http.MethodPost {
-		r.ParseForm()
+		_ = r.ParseForm()
 		username := r.Form.Get("username")
 		password := r.Form.Get("password")
 
 		errs := checkLogin(username, password)
 		v.AddError(errs...)
 		if len(v.Errs) > 0 {
-			templates[temName].Execute(w, &v)
+			_ = templates[temName].Execute(w, &v)
 		} else {
-			setSessionUser(w, r, username)
+			// 设置用户为登录状态
+			_ = setSessionUser(w, r, username)
 			//如果密码正确,就进行302重定向
 			http.Redirect(w, r, "/", 302)
 		}
@@ -95,20 +96,25 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 // 登出的处理函数
 // 登出时,先将缓存清除,然后重定向到首页
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
-	clearSession(w, r)
+	_ = clearSession(w, r)
 	http.Redirect(w, r, "/", 302)
 }
 
+// 注册的handler
+// 当为GET方法时,即将返回注册页面
+// 当为POST方法时,解析参数并检查
+// 如果发生检查错误,则将错误信息打在页面上
+// 如果没有错误,则重定向到首页,并定义用户为登录状态
 func registerHandler(w http.ResponseWriter, r *http.Request) {
 	temName := "register.html"
 	vop := vm.RegisterModelViewOp{}
 	v := vop.GetVM()
 	if r.Method == http.MethodGet {
-		templates[temName].Execute(w, &v)
+		_ = templates[temName].Execute(w, &v)
 		return
 	}
 	if r.Method == http.MethodPost {
-		r.ParseForm()
+		_ = r.ParseForm()
 		username := r.Form.Get("username")
 		password := r.Form.Get("password")
 		email := r.Form.Get("email")
@@ -116,14 +122,14 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		v.AddError(errs...)
 
 		if len(v.Errs) > 0 {
-			templates[temName].Execute(w, &v)
+			_ = templates[temName].Execute(w, &v)
 		} else {
 			if err := addUser(username, password, email); err != nil {
 				log.Println("add User error:", err)
-				w.Write([]byte("插入数据库错误"))
+				_, _ = w.Write([]byte("插入数据库错误"))
 				return
 			}
-			setSessionUser(w, r, username)
+			_ = setSessionUser(w, r, username)
 			http.Redirect(w, r, "/", 302)
 		}
 	}
@@ -143,10 +149,10 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 	v, err := vop.GetVM(sUser, pUser, page, pageLimit)
 	if err != nil {
 		msg := fmt.Sprintf("用户 %s 不存在", pUser)
-		w.Write([]byte(msg))
+		_, _ = w.Write([]byte(msg))
 		return
 	}
-	templates[temName].Execute(w, &v)
+	_ = templates[temName].Execute(w, &v)
 }
 
 // 编辑个人资料的handler
@@ -158,21 +164,22 @@ func profileEditHandler(w http.ResponseWriter, r *http.Request) {
 	vop := vm.ProfileEditViewModelOP{}
 	v := vop.GetVM(username)
 	if r.Method == http.MethodGet {
-		templates[temName].Execute(w, &v)
+		_ = templates[temName].Execute(w, &v)
 	}
 	if r.Method == http.MethodPost {
-		r.ParseForm()
+		_ = r.ParseForm()
 		aboutme := r.Form.Get("aboutme")
 		log.Println("[ProfileEditHandler] about me :", aboutme)
 		if err := vm.UpdateAboutMe(username, aboutme); err != nil {
 			log.Println("[ProfileEditHandler] err :", err)
-			w.Write([]byte("更新时出现错误"))
+			_, _ = w.Write([]byte("更新时出现错误"))
 			return
 		}
 		http.Redirect(w, r, fmt.Sprintf("/user/%s", username), 302)
 	}
 }
 
+// 添加用户到关注列表功能
 func followHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	pUser := vars["username"]
@@ -180,12 +187,13 @@ func followHandler(w http.ResponseWriter, r *http.Request) {
 	err := vm.Follow(sUser, pUser)
 	if err != nil {
 		log.Println("[followHandler] 关注失败:", err)
-		w.Write([]byte("关注失败"))
+		_, _ = w.Write([]byte("关注失败"))
 		return
 	}
 	http.Redirect(w, r, fmt.Sprintf("/user/%s", pUser), http.StatusSeeOther)
 }
 
+// 取消关注功能
 func unFollowHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	pUser := vars["username"]
@@ -193,12 +201,14 @@ func unFollowHandler(w http.ResponseWriter, r *http.Request) {
 	err := vm.UnFollow(sUser, pUser)
 	if err != nil {
 		log.Println("[unFollowHandler] 取消关注失败:", err)
-		w.Write([]byte("取消关注失败"))
+		_, _ = w.Write([]byte("取消关注失败"))
 		return
 	}
 	http.Redirect(w, r, fmt.Sprintf("/user/%s", pUser), http.StatusSeeOther)
 }
 
+// 探索功能的handler
+// 类似于微博的广场功能,会显示所有用户的发送消息
 func exploreHandler(w http.ResponseWriter, r *http.Request) {
 	temName := "explore.html"
 	vop := vm.ExploreViewModelOp{}
@@ -206,8 +216,8 @@ func exploreHandler(w http.ResponseWriter, r *http.Request) {
 	v, err := vop.GetVM(page, pageLimit)
 	if err != nil {
 		log.Println("[exploreHandler] 获取广场文章失败:", err)
-		w.Write([]byte("获取广场文章失败"))
+		_, _ = w.Write([]byte("获取广场文章失败"))
 		return
 	}
-	templates[temName].Execute(w, &v)
+	_ = templates[temName].Execute(w, &v)
 }

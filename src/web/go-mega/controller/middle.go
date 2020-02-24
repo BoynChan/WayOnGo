@@ -21,7 +21,7 @@ func middleAuth(next http.HandlerFunc) http.HandlerFunc {
 			http.Redirect(writer, request, "/login", 302)
 		} else {
 			// 更新用户的last seen时间
-			model.UpdateLastSeen(username)
+			_ = model.UpdateLastSeen(username)
 			next.ServeHTTP(writer, request)
 		}
 	}
