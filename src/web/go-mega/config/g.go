@@ -17,7 +17,7 @@ func init() {
 func getConfig(projectName string) {
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
-	viper.AddConfigPath("F:\\Code\\Go\\LearningGo\\src\\web\\go-mega\\config")
+	viper.AddConfigPath(".\\src\\web\\go-mega\\config")
 	err := viper.ReadInConfig()
 	if err != nil {
 		panic(fmt.Errorf("配置失败:%s", err))

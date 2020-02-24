@@ -1,7 +1,7 @@
 package vm
 
 import (
-	. "web/go-mega/model"
+	"web/go-mega/model"
 )
 
 // Author:Boyn
@@ -9,9 +9,9 @@ import (
 
 // 包含标题与文章的VM
 type IndexViewModel struct {
-	User User
+	User model.User
 	BaseViewModel
-	Posts []Post
+	Posts []model.Post
 }
 
 // IndexViewModel的操作结构
@@ -19,26 +19,12 @@ type IndexViewModelOp struct {
 }
 
 func (i IndexViewModelOp) GetVM() IndexViewModel {
-	u1 := User{Username: "boyn"}
-	u2 := User{Username: "kaserchan"}
-	posts := []Post{
-		{
-			User:  u1,
-			Title: "模板的if-else操作",
-		},
-		{
-			User:  u1,
-			Title: "模板的插值操作",
-		},
-		{
-			User:  u2,
-			Title: "模板的循环操作",
-		},
-	}
+	username, _ := model.GetUserByUsername("rene")
+	posts, _ := model.GetPostsByUserID(username.ID)
 	v := IndexViewModel{
-		User:          u1,
+		User:          *username,
 		BaseViewModel: BaseViewModel{Title: "HomePage"},
-		Posts:         posts,
+		Posts:         *posts,
 	}
 	return v
 }
