@@ -25,6 +25,10 @@ func getConfig(projectName string) {
 
 }
 
+func GetSessionKey() string {
+	return viper.GetString("session.secret-key")
+}
+
 func GetMysqlConnectionString() string {
 	usr := viper.GetString("mysql.user")
 	pwd := viper.GetString("mysql.password")

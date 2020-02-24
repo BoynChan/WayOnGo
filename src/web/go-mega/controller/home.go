@@ -12,6 +12,7 @@ type home struct{}
 func (h home) registerRoutes() {
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/login", loginHandler)
+	http.HandleFunc("/logout", logoutHandler)
 }
 
 // 这个函数被registerRoutes()注册在homeController中,它注册的路径是'/'
@@ -44,10 +45,16 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		if len(v.Errs) > 0 {
 			templates[temName].Execute(w, &v)
 		} else {
+			setSessionUser(w, r, username)
 			//如果密码正确,就进行302重定向
 			http.Redirect(w, r, "/", 302)
 		}
 	}
+}
+
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	clearSession(w, r)
+	http.Redirect(w, r, "/", 302)
 }
 
 func check(username, password string) bool {

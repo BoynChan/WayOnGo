@@ -6,6 +6,7 @@ import (
 	"web/go-mega/controller"
 	"web/go-mega/model"
 
+	"github.com/gorilla/context"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
@@ -21,5 +22,5 @@ func main() {
 
 	// Set up Controller
 	controller.Startup()
-	http.ListenAndServe(":8009", nil)
+	http.ListenAndServe(":8009", context.ClearHandler(http.DefaultServeMux))
 }
