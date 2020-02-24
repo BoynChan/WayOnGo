@@ -27,6 +27,7 @@ func (h home) registerRoutes() {
 	r.HandleFunc("/profile_edit", middleAuth(profileEditHandler))
 	r.HandleFunc("/follow/{username}", middleAuth(followHandler))
 	r.HandleFunc("/unfollow/{username}", middleAuth(unFollowHandler))
+	r.HandleFunc("/explore", exploreHandler)
 
 	http.Handle("/", r)
 }
@@ -196,4 +197,17 @@ func unFollowHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, fmt.Sprintf("/user/%s", pUser), http.StatusSeeOther)
+}
+
+func exploreHandler(w http.ResponseWriter, r *http.Request) {
+	temName := "explore.html"
+	vop := vm.ExploreViewModelOp{}
+	page := getPage(r)
+	v, err := vop.GetVM(page, pageLimit)
+	if err != nil {
+		log.Println("[exploreHandler] 获取广场文章失败:", err)
+		w.Write([]byte("获取广场文章失败"))
+		return
+	}
+	templates[temName].Execute(w, &v)
 }
