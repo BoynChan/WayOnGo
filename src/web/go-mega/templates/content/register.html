@@ -1,11 +1,11 @@
 {{define "content"}}
-    <form action="/register" method="post" name="register">
+    <form action="/register" method="post" name="register" class="form-control">
         <p><input type="text" name="username" value="" placeholder="用户名"></p>
         <p><input type="text" name="email" value="" placeholder="邮箱"></p>
         <p><input type="password" name="password" value="" placeholder="密码"></p>
-        <p><input type="submit" value="注册"></p>
+        <p><input type="submit" value="注册" class="btn btn-outline-primary"></p>
     </form>
-    <p>已有账户?<a href="/login">点击登录</a></p>
+    <p>已有账户?<a href="/login" class="btn btn-outline-primary">点击登录</a></p>
     {{ if .Errs}}
         <ul>
             {{range .Errs}}

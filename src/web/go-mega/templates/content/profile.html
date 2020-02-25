@@ -35,10 +35,35 @@
             </tr>
         </table>
     {{end}}
-    {{ if gt .PrevPage 0 }}
-        <a href="/user/{{.ProfileUser.Username}}?page={{.PrevPage}}">上一页</a>
-    {{ end }}
-    {{ if gt .NextPage 0 }}
-        <a href="/user/{{.ProfileUser.Username}}?page={{.NextPage}}">下一页</a>
-    {{ end }}
+    <nav aria-label="...">
+        <ul class="pagination justify-content-center">
+            {{ if gt .PrevPage 0 }}
+                <li class="page-item">
+                    <a href="/user/{{.ProfileUser.Username}}?page={{.PrevPage}}">
+                        <span class="page-link" aria-hidden="true">&larr; Newer Posts</span>
+                    </a>
+                </li>
+            {{ else }}
+                <li class="page-item disabled">
+                    <a href="#">
+                        <span class="page-link" aria-hidden="true">&larr; Newer Posts</span>
+                    </a>
+                </li>
+            {{ end }}
+            {{ if gt .NextPage 0 }}
+                <li class="page-item">
+                    <a href="/user/{{.ProfileUser.Username}}?page={{.NextPage}}">
+                        <span class="page-link" aria-hidden="true">Older Posts &rarr;</span>
+                    </a>
+                </li>
+            {{ else }}
+                <li class="page-item disabled">
+                    <a href="#">
+                        <span class="page-link" aria-hidden="true">Older Posts &rarr;</span>
+                    </a>
+                </li>
+            {{ end }}
+
+        </ul>
+    </nav>
 {{end}}
