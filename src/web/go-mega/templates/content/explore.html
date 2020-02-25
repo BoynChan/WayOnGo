@@ -3,14 +3,14 @@
         <table>
             <tr valign="top">
                 <td><img src="{{.User.Avatar}}&s=36"></td>
-                <td><a href="/user/{{.User.Username}}">{{ .User.Username }} </a>says:<br>{{ .Body }}</td>
+                <td><a href="/user/{{.User.Username}}">{{ .User.Username }} </a>说:<br>{{ .Body }}</td>
             </tr>
         </table>
     {{end}}
     {{ if gt .PrevPage 0 }}
-        <a href="/explore?page={{.PrevPage}}">Newer posts</a>
+        <a href="/explore?page={{.PrevPage}}">上一页</a>
     {{ end }}
     {{ if gt .NextPage 0 }}
-        <a href="/explore?page={{.NextPage}}">Older posts</a>
+        <a href="/explore?page={{.NextPage}}">下一页</a>
     {{ end }}
 {{end}}

@@ -1,7 +1,7 @@
 {{define "content"}}
     <p>Username:{{.ProfileUser.Username}}</p>
     <form action="/profile_edit" method="post" name="profile_edit">
-        <p>About Me</p>
+        <p>关于我</p>
         <textarea name="aboutme" rows="5" cols="80" value="" placeholder="about me.">
             {{.ProfileUser.AboutMe}}
         </textarea>

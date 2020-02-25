@@ -1,5 +1,5 @@
 {{define "content"}}
-    <h2>Hello! {{.CurrentUser}}</h2>
+    <h2>你好! {{.CurrentUser}}</h2>
     <form action="/" method="post">
         <p><textarea name="body" rows="3" cols="80" value="" placeholder="说点什么"></textarea></p>
         <p><input type="submit" name="submit" value="Post"></p>
@@ -12,14 +12,14 @@
         <table>
             <tr style="align-content: center">
                 <td><img src="{{.User.Avatar}}&s=36"></td>
-                <td><a href="/user/{{.User.Username}}">{{ .User.Username }} </a>says:<br>{{ .Body }}</td>
+                <td><a href="/user/{{.User.Username}}">{{ .User.Username }} </a>说:<br>{{ .Body }}</td>
             </tr>
         </table>
     {{end}}
     {{ if gt .PrevPage 0 }}
-        <a href="/?page={{.PrevPage}}">Newer posts</a>
+        <a href="/?page={{.PrevPage}}">上一页</a>
     {{ end }}
     {{ if gt .NextPage 0 }}
-        <a href="/?page={{.NextPage}}">Older posts</a>
+        <a href="/?page={{.NextPage}}">下一页</a>
     {{ end }}
 {{end}}

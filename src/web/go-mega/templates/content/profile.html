@@ -3,24 +3,24 @@
         <tr valign="top">
             <td><img src="{{.ProfileUser.Avatar}}&s=128"></td>
             <td>
-                <h2>User: {{.ProfileUser.Username}}</h2>
+                <h2>用户: {{.ProfileUser.Username}}</h2>
                 {{if .ProfileUser.AboutMe}}
                     <p>{{ .ProfileUser.AboutMe }}</p>
                 {{end}}
 
                 {{if .ProfileUser.LastSeen}}
-                    <p>Last seen on: {{ .ProfileUser.LastSeen }}</p>
+                    <p>最后一次操作: {{ .ProfileUser.LastSeen }}</p>
                 {{end}}
 
-                <p>{{ .FollowersCount }} followers, {{ .FollowingCount }} following.</p>
+                <p>{{ .FollowersCount }} 关注者, 关注了 {{ .FollowingCount }} 人.</p>
 
                 {{if .Editable}}
-                    <p><a href="/profile_edit">Edit your profile</a></p>
+                    <p><a href="/profile_edit">编辑档案</a></p>
                 {{else}}
                     {{if .IsFollow}}
-                        <p><a href="/unfollow/{{.ProfileUser.Username}}">Unfollow</a></p>
+                        <p><a href="/unfollow/{{.ProfileUser.Username}}">取消关注</a></p>
                     {{else}}
-                        <p><a href="/follow/{{.ProfileUser.Username}}">Follow</a></p>
+                        <p><a href="/follow/{{.ProfileUser.Username}}">关注</a></p>
                     {{end}}
                 {{end}}
 
@@ -31,14 +31,14 @@
         <table>
             <tr valign="top">
                 <td><img src="{{.User.Avatar}}&s=36"></td>
-                <td>{{ .User.Username }} says:<br>{{ .Body }}</td>
+                <td>{{ .User.Username }} 说:<br>{{ .Body }}</td>
             </tr>
         </table>
     {{end}}
     {{ if gt .PrevPage 0 }}
-        <a href="/user/{{.ProfileUser.Username}}?page={{.PrevPage}}">Newer posts</a>
+        <a href="/user/{{.ProfileUser.Username}}?page={{.PrevPage}}">上一页</a>
     {{ end }}
     {{ if gt .NextPage 0 }}
-        <a href="/user/{{.ProfileUser.Username}}?page={{.NextPage}}">Older posts</a>
+        <a href="/user/{{.ProfileUser.Username}}?page={{.NextPage}}">下一页</a>
     {{ end }}
 {{end}}
