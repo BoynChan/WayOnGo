@@ -16,7 +16,7 @@ type ProfileEditViewModelOP struct {
 func (ProfileEditViewModelOP) GetVM(username string) ProfileEditViewModel {
 	v := ProfileEditViewModel{}
 	u, _ := model.GetUserByUsername(username)
-	v.SetTitle("Profile Edit")
+	v.SetTitle("编辑主页")
 	v.SetCurrentUser(username)
 	v.ProfileUser = *u
 	return v

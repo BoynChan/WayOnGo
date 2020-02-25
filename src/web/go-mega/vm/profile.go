@@ -26,7 +26,7 @@ type ProfileViewModelOp struct {
 // pUser是我们准备要查看其个人主页的用户
 func (ProfileViewModelOp) GetVM(sUser, pUser string, page, limit int) (ProfileViewModel, error) {
 	v := ProfileViewModel{}
-	v.SetTitle("Profile")
+	v.SetTitle("个人主页")
 	p1, err := model.GetUserByUsername(pUser)
 	if err != nil {
 		return v, err

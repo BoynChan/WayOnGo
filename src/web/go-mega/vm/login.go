@@ -29,7 +29,7 @@ func CheckLogin(username, password string) bool {
 
 func (LoginViewModelOp) GetVM() LoginViewModel {
 	v := LoginViewModel{}
-	v.SetTitle("Login")
+	v.SetTitle("登录")
 	return v
 }
 

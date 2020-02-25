@@ -17,7 +17,7 @@ func (ExploreViewModelOp) GetVM(page, limit int) (ExploreViewModel, error) {
 	v := ExploreViewModel{}
 	posts, total, _ := model.GetPostsByPageAndLimit(page, limit)
 	v.Posts = posts
-	v.Title = "Explore"
+	v.Title = "探索"
 	v.SetBasePageViewModel(total, page, limit)
 	return v, nil
 }

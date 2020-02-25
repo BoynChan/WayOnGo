@@ -23,7 +23,7 @@ func (i IndexViewModelOp) GetVM(username string, flash string, page, limit int) 
 	// 获取关注者的文章
 	posts, total, _ := user.FollowingPostsByPageAndLimit(page, limit)
 	v := IndexViewModel{BaseViewModel{}, *posts, flash}
-	v.SetTitle("HomePage")
+	v.SetTitle("主页")
 	v.SetCurrentUser(username)
 	v.SetBasePageViewModel(total, page, limit)
 	return v

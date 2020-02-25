@@ -17,7 +17,7 @@ type RegisterModelViewOp struct {
 
 func (RegisterModelViewOp) GetVM() RegisterModelView {
 	v := RegisterModelView{}
-	v.SetTitle("Register")
+	v.SetTitle("注册")
 	return v
 }
 
