@@ -1,9 +1,12 @@
 package controller
 
 import (
+	"bytes"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
+	"strings"
 	"web/go-mega/vm"
 
 	"github.com/gorilla/mux"
@@ -27,7 +30,9 @@ func (h home) registerRoutes() {
 	r.HandleFunc("/profile_edit", middleAuth(profileEditHandler))
 	r.HandleFunc("/follow/{username}", middleAuth(followHandler))
 	r.HandleFunc("/unfollow/{username}", middleAuth(unFollowHandler))
+	r.HandleFunc("/reset_password_request", resetPasswordRequestHandler)
 	r.HandleFunc("/explore", exploreHandler)
+	r.HandleFunc("/reset_password/{token}", resetPasswordHandler)
 
 	http.Handle("/", r)
 }
@@ -51,7 +56,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		body := r.Form.Get("body")
 		errMessage := checkLen("Post", body, 1, 180)
 		if len(errMessage) != 0 {
-			setFlash(w, r, errMessage)
+			setFlash(w, r, strings.Join(errMessage, "\n"))
 		} else {
 			err := vm.CreatePost(username, body)
 			if err != nil {
@@ -220,4 +225,80 @@ func exploreHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_ = templates[temName].Execute(w, &v)
+}
+
+// 密码重置时,用于发送邮件功能的handler
+func resetPasswordRequestHandler(w http.ResponseWriter, r *http.Request) {
+	temName := "reset_password_request.html"
+	vop := vm.ResetPasswordRequestViewModelOp{}
+	v := vop.GetVM()
+
+	if r.Method == http.MethodPost {
+		r.ParseForm()
+		email := r.Form.Get("email")
+
+		errs := checkResetPasswordRequest(email)
+		v.AddError(errs...)
+
+		if len(v.Errs) > 0 {
+			templates[temName].Execute(w, &v)
+		} else {
+			log.Println("[resetPasswordRequestHandler] 发送邮件至", email)
+			vopEmail := vm.EmailViewModelOp{}
+			vEmail := vopEmail.GetVM(email)
+			var contentByte bytes.Buffer
+			tem, _ := template.ParseFiles(".\\src\\web\\go-mega\\templates\\content\\email.html")
+			if err := tem.Execute(&contentByte, &vEmail); err != nil {
+				log.Println("[resetPasswordRequestHandler] 邮件发送失败:", err)
+				w.Write([]byte("发送邮件错误"))
+				return
+			}
+			content := contentByte.String()
+			go sendEmail(email, "重置密码", content)
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+		}
+	}
+
+	if r.Method == http.MethodGet {
+		templates[temName].Execute(w, &v)
+	}
+}
+
+// 接收到邮件时,用于重置密码的功能handler
+func resetPasswordHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	token := vars["token"]
+	username, err := vm.CheckToken(token)
+	if err != nil {
+		w.Write([]byte("The token is no longer valid, please go to the login page."))
+	}
+
+	tpName := "reset_password.html"
+	vop := vm.ResetPasswordViewModelOp{}
+	v := vop.GetVM(token)
+
+	if r.Method == http.MethodGet {
+		templates[tpName].Execute(w, &v)
+	}
+
+	if r.Method == http.MethodPost {
+		log.Println("Reset password for ", username)
+		r.ParseForm()
+		pwd1 := r.Form.Get("pwd1")
+		pwd2 := r.Form.Get("pwd2")
+
+		errs := checkResetPassword(pwd1, pwd2)
+		v.AddError(errs...)
+
+		if len(v.Errs) > 0 {
+			templates[tpName].Execute(w, &v)
+		} else {
+			if err := vm.ResetUserPassword(username, pwd1); err != nil {
+				log.Println("reset User password error:", err)
+				w.Write([]byte("Error update user password in database"))
+				return
+			}
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+		}
+	}
 }

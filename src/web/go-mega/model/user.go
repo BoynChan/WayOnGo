@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 // Author:Boyn
@@ -48,6 +50,15 @@ func GetUserByUsername(username string) (*User, error) {
 	return &user, nil
 }
 
+// 根据email从数据库中取出用户
+func GetUserByEmail(email string) (*User, error) {
+	var user User
+	if err := db.Where("email=?", email).Find(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 // 向表中添加一个User
 // 在添加新用户时,将自己加入到自己的关注列表
 func AddUser(username, password, email string) error {
@@ -64,7 +75,7 @@ func AddUser(username, password, email string) error {
 }
 
 // 更新数据库中某用户的信息
-func UpdateUserByUsername(username string, contents map[string]interface{}) error {
+func UpdateUserInfoByUsername(username string, contents map[string]interface{}) error {
 	item, err := GetUserByUsername(username)
 	if err != nil {
 		return err
@@ -75,13 +86,19 @@ func UpdateUserByUsername(username string, contents map[string]interface{}) erro
 // 更新最后操作信息
 func UpdateLastSeen(username string) error {
 	contents := map[string]interface{}{"last_seen": time.Now()}
-	return UpdateUserByUsername(username, contents)
+	return UpdateUserInfoByUsername(username, contents)
 }
 
 // 更新 "关于我" 信息
 func UpdateAboutMe(username, aboutMe string) error {
 	contents := map[string]interface{}{"about_me": aboutMe}
-	return UpdateUserByUsername(username, contents)
+	return UpdateUserInfoByUsername(username, contents)
+}
+
+// 更新密码
+func UpdatePassword(username, password string) error {
+	contents := map[string]interface{}{"password": Md5(password)}
+	return UpdateUserInfoByUsername(username, contents)
 }
 
 // 关注某人
@@ -182,4 +199,28 @@ func (u *User) IsFollowedByUser(username string) bool {
 func (u *User) CreatePost(body string) error {
 	post := Post{Body: body, UserID: u.ID}
 	return db.Create(&post).Error
+}
+
+// 创建关于该用户的JWT字符串
+func (u *User) GenerateToken() (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"username": u.Username,
+		"exp":      time.Now().Add(time.Hour * 2).Unix(),
+	})
+	return token.SignedString([]byte("secret"))
+}
+
+// 检查JWT是否合法
+func CheckToken(tokenString string) (string, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (i interface{}, err error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("JWT加密算法错误,%v", token.Header["alg"])
+		}
+		return []byte("secret"), nil
+	})
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims["username"].(string), nil
+	} else {
+		return "", err
+	}
 }

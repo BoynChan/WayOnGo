@@ -1,15 +1,21 @@
 package controller
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"html/template"
+	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"regexp"
 	"strconv"
+	"web/go-mega/config"
 	"web/go-mega/vm"
+
+	"gopkg.in/gomail.v2"
 )
 
 // Author:Boyn
@@ -92,62 +98,81 @@ func clearSession(w http.ResponseWriter, r *http.Request) error {
 }
 
 // 检查长度,字段名,字段域和最大最小长度都由调用者指定
-func checkLen(fieldName, fieldValue string, minLen, maxLen int) string {
+func checkLen(fieldName, fieldValue string, minLen, maxLen int) []string {
 	lenField := len(fieldValue)
+	var errs []string
 	if lenField < minLen {
-		return fmt.Sprintf("%s field is too short, less than %d", fieldName, minLen)
+		errs = append(errs, fmt.Sprintf("%s field is too short, less than %d", fieldName, minLen))
 	}
 	if lenField > maxLen {
-		return fmt.Sprintf("%s field is too long, more than %d", fieldName, maxLen)
+		errs = append(errs, fmt.Sprintf("%s field is too long, more than %d", fieldName, maxLen))
 	}
-	return ""
+	return errs
+}
+
+func checkResetPassword(pwd1, pwd2 string) []string {
+	var errs []string
+	errs = append(errs, checkLen("Password", pwd1, 6, 50)...)
+
+	if pwd1 != pwd2 {
+		errs = append(errs, "两次输入的密码不一样")
+	}
+	return errs
 }
 
 // 检查用户名长度
-func checkUsername(username string) string {
+func checkUsername(username string) []string {
 	return checkLen("Username", username, 3, 20)
 }
 
 // 检查密码长度
-func checkPassword(password string) string {
+func checkPassword(password string) []string {
 	return checkLen("Password", password, 6, 50)
 }
 
 // 正则匹配查看邮箱地址是否正确
-func checkEmail(email string) string {
+func checkEmail(email string) []string {
+	var errs []string
 	if m, _ := regexp.MatchString(`^([\w\.\_]{2,10})@(\w{1,}).([a-z]{2,4})$`, email); !m {
-		return fmt.Sprintf("Email field not a valid email")
+		errs = append(errs, fmt.Sprintf("Email field not a valid email"))
 	}
-	return ""
+	return errs
 }
 
 // 检查用户用户名与密码是否正确
-func checkUserPassword(username, password string) string {
+func checkUserPassword(username, password string) []string {
+	var errs []string
 	if !vm.CheckLogin(username, password) {
-		return fmt.Sprintf("Username and password is not correct.")
+		errs = append(errs, fmt.Sprintf("Username and password is not correct."))
 	}
-	return ""
+	return errs
 }
 
 // 检查用户是否存在
-func checkUserExist(username string) string {
+func checkUserExist(username string) []string {
+	var errs []string
 	if vm.CheckUserExist(username) {
-		return fmt.Sprintf("Username already exist, please choose another username")
+		errs = append(errs, fmt.Sprintf("Username already exist, please choose another username"))
 	}
-	return ""
+	return errs
+}
+
+// 检查重置密码所用的邮箱是否正确
+func checkResetPasswordRequest(email string) []string {
+	return checkEmail(email)
 }
 
 // 检查登录时的参数
 func checkLogin(username, password string) []string {
 	var errs []string
 	if errCheck := checkUsername(username); len(errCheck) > 0 {
-		errs = append(errs, errCheck)
+		errs = append(errs, errCheck...)
 	}
 	if errCheck := checkPassword(password); len(errCheck) > 0 {
-		errs = append(errs, errCheck)
+		errs = append(errs, errCheck...)
 	}
 	if errCheck := checkUserPassword(username, password); len(errCheck) > 0 {
-		errs = append(errs, errCheck)
+		errs = append(errs, errCheck...)
 	}
 	return errs
 }
@@ -156,16 +181,16 @@ func checkLogin(username, password string) []string {
 func checkRegister(username, email, password string) []string {
 	var errs []string
 	if errCheck := checkUsername(username); len(errCheck) > 0 {
-		errs = append(errs, errCheck)
+		errs = append(errs, errCheck...)
 	}
 	if errCheck := checkPassword(password); len(errCheck) > 0 {
-		errs = append(errs, errCheck)
+		errs = append(errs, errCheck...)
 	}
 	if errCheck := checkEmail(email); len(errCheck) > 0 {
-		errs = append(errs, errCheck)
+		errs = append(errs, errCheck...)
 	}
 	if errCheck := checkUserExist(username); len(errCheck) > 0 {
-		errs = append(errs, errCheck)
+		errs = append(errs, errCheck...)
 	}
 	return errs
 }
@@ -204,4 +229,22 @@ func getPage(r *http.Request) int {
 		return 1
 	}
 	return page
+}
+
+// 发送邮件的函数
+func sendEmail(target, subject, content string) {
+	server, port, usr, pwd := config.GetSMTPConfig()
+	d := gomail.NewDialer(server, port, usr, pwd)
+	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+	m := gomail.NewMessage()
+	m.SetHeader("From", usr)
+	m.SetHeader("To", target)
+	m.SetAddressHeader("Cc", usr, "admin")
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", content)
+
+	if err := d.DialAndSend(m); err != nil && err != io.EOF {
+		log.Println("[sendEmail] 发送邮件失败:", err)
+		return
+	}
 }

@@ -1,0 +1,12 @@
+<p>尊敬的 {{.Username}},</p>
+<p>
+    如果需要重置密码,请
+    <a href="{{.Server}}/reset_password/{{.Token}}">
+        点击这里
+    </a>.
+</p>
+<p>如果跳转失败,你还可以复制以下链接到浏览器进行访问:</p>
+<p>{{.Server}}/reset_password/{{.Token}}</p>
+<p>如果对重置密码没有需要,请直接忽略该邮件.</p>
+<p>这封邮件的有效时间是2小时.</p>
+<p> -- boyn chan</p>

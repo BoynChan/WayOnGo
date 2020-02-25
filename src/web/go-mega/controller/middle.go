@@ -15,7 +15,7 @@ import (
 func middleAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		username, err := getSessionUser(request)
-		log.Println("middle:", username)
+		log.Println("[middleAuth] middle:", username)
 		if err != nil {
 			log.Println("中间层无法获取到缓存")
 			http.Redirect(writer, request, "/login", 302)
