@@ -50,6 +50,10 @@ func (group *RouteGroup) Group(prefix string) *RouteGroup {
 	return newGroup
 }
 
+func (group *RouteGroup) Use(middlewares ...HandlerFunc) {
+	group.middlewares = append(group.middlewares, middlewares...)
+}
+
 func (group *RouteGroup) addRoute(method string, comp string, handler HandlerFunc) {
 	pattern := group.prefix + comp
 	log.Printf("Add Route %s - %s", method, comp)
@@ -69,6 +73,13 @@ func (engine *Engine) Run(addr string) (err error) {
 }
 
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	var middlewares []HandlerFunc
+	for _, group := range engine.groups {
+		if strings.HasPrefix(r.URL.Path, group.prefix) {
+			middlewares = append(middlewares, group.middlewares...)
+		}
+	}
 	c := newContext(w, r)
+	c.handlers = middlewares
 	engine.router.handler(c)
 }

@@ -18,6 +18,8 @@ type Context struct {
 	Method     string              // 请求的方法
 	Params     map[string]string   // 动态路径的解析参数
 	StatusCode int                 // 响应状态码
+	handlers   []HandlerFunc       // 中间件的调用函数集合
+	index      int                 // 调用位置索引
 }
 
 func newContext(w http.ResponseWriter, req *http.Request) *Context {
@@ -26,6 +28,14 @@ func newContext(w http.ResponseWriter, req *http.Request) *Context {
 		Req:    req,
 		Path:   req.URL.Path,
 		Method: req.Method,
+		index:  -1,
+	}
+}
+
+func (c *Context) Next() {
+	c.index++
+	for s := len(c.handlers); c.index < s; c.index++ {
+		c.handlers[c.index](c)
 	}
 }
 
@@ -59,6 +69,10 @@ func (c *Context) JSON(code int, obj interface{}) {
 	if err := encoder.Encode(obj); err != nil {
 		http.Error(c.Writer, err.Error(), 500)
 	}
+}
+
+func (c *Context) Fail(code int, errData string) {
+	http.Error(c.Writer, errData, code)
 }
 
 func (c *Context) Param(key string) string {
