@@ -72,7 +72,7 @@ func (c *Context) JSON(code int, obj interface{}) {
 }
 
 func (c *Context) Fail(code int, errData string) {
-	http.Error(c.Writer, errData, code)
+	c.JSON(code, H{"message": errData})
 }
 
 func (c *Context) Param(key string) string {
