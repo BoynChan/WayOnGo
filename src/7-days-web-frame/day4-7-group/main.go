@@ -1,7 +1,7 @@
 package main
 
 import (
-	"7-days-web-frame/day4-group/gee"
+	"7-days-web-frame/day4-7-group/gee"
 	"net/http"
 )
 
