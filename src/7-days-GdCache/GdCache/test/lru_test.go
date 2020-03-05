@@ -1,6 +1,9 @@
-package lru
+package test
 
-import "testing"
+import (
+	"7-days-GdCache/GdCache/lru"
+	"testing"
+)
 
 // Author:Boyn
 // Date:2020/3/5
@@ -10,8 +13,8 @@ func (Integer) Len() int {
 	return 4
 }
 
-func NewCache(cap int64) *Cache {
-	return New(cap, nil)
+func NewCache(cap int64) *lru.Cache {
+	return lru.New(cap, nil)
 }
 
 func TestAdd(t *testing.T) {
