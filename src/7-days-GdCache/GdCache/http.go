@@ -2,6 +2,7 @@ package GdCache
 
 import (
 	"7-days-GdCache/GdCache/consistenthash"
+	"7-days-GdCache/GdCache/pb"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -9,6 +10,8 @@ import (
 	"net/url"
 	"strings"
 	"sync"
+
+	"github.com/golang/protobuf/proto"
 )
 
 // 提供被其他节点访问的能力(基于http)
@@ -55,7 +58,7 @@ func (p *HTTPPool) PickPeer(key string) (PeerGetter, bool) {
 }
 
 func (p *HTTPPool) Log(format string, v ...interface{}) {
-	log.Printf("[ServeHttp %s] %s\n", p.basePath, fmt.Sprintf(format, v...))
+	log.Printf("[ServeHttp %s] %s\n", p.self, fmt.Sprintf(format, v...))
 }
 
 func (p *HTTPPool) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -86,30 +89,38 @@ func (p *HTTPPool) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	body, err := proto.Marshal(&pb.Response{Value: view.ByteSlice()})
+	if err != nil {
+		http.Error(w, fmt.Sprintf("缓存请求出错: %s  %s", key, err.Error()), http.StatusBadRequest)
+		return
+	}
 	w.Header().Set("Content-Type", "application/octet-stream")
-	w.Write(view.ByteSlice())
+	w.Write(body)
 }
 
 type httpGetter struct {
 	baseURL string
 }
 
-func (h *httpGetter) Get(group string, key string) ([]byte, error) {
-	u := fmt.Sprintf("%v%v/%v", h.baseURL, url.QueryEscape(group), url.QueryEscape(key))
+func (h *httpGetter) Get(in *pb.Request, out *pb.Response) error {
+	u := fmt.Sprintf("%v%v/%v", h.baseURL, url.QueryEscape(in.Group), url.QueryEscape(in.Key))
 	res, err := http.Get(u)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("请求状态出错 url:%s status_code %d \n", u, res.StatusCode)
+		return fmt.Errorf("请求状态出错 url:%s status_code %d \n", u, res.StatusCode)
 	}
 	if res.Header.Get("Content-Type") != "application/octet-stream" {
-		return nil, fmt.Errorf("请求头部出错 url:%s Content-Type:%s\n", u, res.Header.Get("Content-Type"))
+		return fmt.Errorf("请求头部出错 url:%s Content-Type:%s\n", u, res.Header.Get("Content-Type"))
 	}
 	bytes, err := ioutil.ReadAll(res.Body)
 	defer res.Body.Close()
 	if err != nil {
-		return nil, fmt.Errorf("解析出错 url:%s err:%s\n", u, err.Error())
+		return fmt.Errorf("解析出错 url:%s err:%s\n", u, err.Error())
 	}
-	return bytes, nil
+	if err = proto.Unmarshal(bytes, out); err != nil {
+		return fmt.Errorf("解析出错 url:%s err:%s\n", u, err.Error())
+	}
+	return nil
 }

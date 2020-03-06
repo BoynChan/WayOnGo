@@ -1,5 +1,7 @@
 package GdCache
 
+import "7-days-GdCache/GdCache/pb"
+
 // Author:Boyn
 // Date:2020/3/6
 
@@ -10,5 +12,5 @@ type PeerPicker interface {
 
 // 从对应group中查找缓存值
 type PeerGetter interface {
-	Get(group string, key string) ([]byte, error)
+	Get(in *pb.Request, out *pb.Response) error
 }
