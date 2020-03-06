@@ -26,6 +26,15 @@ type Group struct {
 	name      string // 命名空间
 	getter    Getter // 缓存未命中时从此处拿取值
 	mainCache cache  // 实际缓存存储的地方
+	peers     PeerPicker
+}
+
+func (g *Group) RegisterPeers(peers PeerPicker) {
+	if g.peers != nil {
+		fmt.Println("无法注册两次")
+		return
+	}
+	g.peers = peers
 }
 
 var (
@@ -72,14 +81,30 @@ func (g *Group) Get(key string) (ByteView, error) {
 	return g.load(key)
 }
 
-// load函数在后面会进行拓展
-// 目前的功能是从本地(也就是我们指定的函数中)进行佳在
+// 目前的功能是先在已经注册的API服务器中进行加载
+// 如果没有已注册的API服务器,或获取失败,则从本地加载
 func (g *Group) load(key string) (value ByteView, err error) {
-	return g.getLocally(key)
+	if g.peers != nil {
+		if peer, ok := g.peers.PickPeer(key); ok {
+			if value, err := g.getFromPeer(peer, key); err == nil {
+				return value, nil
+			}
+			fmt.Printf("GdCache - [无法从peer获取key] - key %s\n", key)
+		}
+	}
+	return g.getFromLocal(key)
+}
+
+func (g *Group) getFromPeer(peer PeerGetter, key string) (ByteView, error) {
+	bytes, err := peer.Get(g.name, key)
+	if err != nil {
+		return ByteView{}, err
+	}
+	return ByteView{b: bytes}, nil
 }
 
 // 从本地(即开始指定的函数中)进行加载
-func (g *Group) getLocally(key string) (ByteView, error) {
+func (g *Group) getFromLocal(key string) (ByteView, error) {
 	bytes, err := g.getter.Get(key)
 	if err != nil {
 		return ByteView{}, err
