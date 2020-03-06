@@ -5,6 +5,7 @@ import (
 	"sync"
 )
 
+// 并发安全的缓存实现
 // Author:Boyn
 // Date:2020/3/5
 
