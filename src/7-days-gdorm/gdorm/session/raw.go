@@ -1,7 +1,7 @@
 package session
 
 import (
-	"7-days-gdorm/day1-database-sql/log"
+	"7-days-gdorm/gdorm/log"
 	"database/sql"
 	"strings"
 )

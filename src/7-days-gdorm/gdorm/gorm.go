@@ -1,8 +1,8 @@
 package gdorm
 
 import (
-	"7-days-gdorm/day1-database-sql/log"
-	"7-days-gdorm/day1-database-sql/session"
+	"7-days-gdorm/gdorm/log"
+	"7-days-gdorm/gdorm/session"
 	"database/sql"
 )
 

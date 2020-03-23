@@ -1,8 +1,8 @@
 package main
 
 import (
-	gdorm "7-days-gdorm/day1-database-sql"
-	"7-days-gdorm/day1-database-sql/log"
+	gdorm "7-days-gdorm/gdorm"
+	"7-days-gdorm/gdorm/log"
 	"fmt"
 
 	_ "github.com/mattn/go-sqlite3"
