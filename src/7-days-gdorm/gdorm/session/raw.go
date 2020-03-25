@@ -1,7 +1,9 @@
 package session
 
 import (
+	"7-days-gdorm/gdorm/dialect"
 	"7-days-gdorm/gdorm/log"
+	"7-days-gdorm/gdorm/schema"
 	"database/sql"
 	"strings"
 )
@@ -11,13 +13,15 @@ import (
 // this part of code in charge of communicate with db
 
 type Session struct {
-	db      *sql.DB         // db instance
-	sql     strings.Builder // sql command
-	sqlVars []interface{}   // sql command variables
+	db       *sql.DB         // db instance
+	sql      strings.Builder // sql command
+	dialect  dialect.Dialect // dialect of specific db
+	refTable *schema.Schema  // reference table, contains info of table
+	sqlVars  []interface{}   // sql command variables
 }
 
-func New(db *sql.DB) *Session {
-	return &Session{db: db}
+func New(db *sql.DB, dialect dialect.Dialect) *Session {
+	return &Session{db: db, dialect: dialect}
 }
 
 func (s *Session) Clear() {
@@ -50,7 +54,7 @@ func (s *Session) Exec() (result sql.Result, err error) {
 func (s *Session) QueryRow() *sql.Row {
 	defer s.Clear()
 	log.Info(s.sql.String(), s.sqlVars)
-	return s.DB().QueryRow(s.sql.String(), s.sqlVars)
+	return s.DB().QueryRow(s.sql.String(), s.sqlVars...)
 }
 
 func (s *Session) QueryRows() (result *sql.Rows, err error) {

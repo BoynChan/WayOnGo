@@ -1,6 +1,7 @@
 package gdorm
 
 import (
+	"7-days-gdorm/gdorm/dialect"
 	"7-days-gdorm/gdorm/log"
 	"7-days-gdorm/gdorm/session"
 	"database/sql"
@@ -10,10 +11,15 @@ import (
 // Date:2020/3/23
 
 type Engine struct {
-	db *sql.DB
+	db      *sql.DB
+	dialect dialect.Dialect
 }
 
 func NewEngine(driver, source string) (e *Engine, err error) {
+	dialect, ok := dialect.GetDialect(driver)
+	if !ok {
+		log.Error("can not get the corresponding dialect of this type of db")
+	}
 	db, err := sql.Open(driver, source)
 	if err != nil {
 		log.Error(err)
@@ -24,7 +30,7 @@ func NewEngine(driver, source string) (e *Engine, err error) {
 		log.Error(err)
 		return
 	}
-	e = &Engine{db: db}
+	e = &Engine{db: db, dialect: dialect}
 	log.Info("Connect Database success")
 	return
 }
@@ -37,5 +43,5 @@ func (engine *Engine) Close() {
 }
 
 func (engine *Engine) NewSession() *session.Session {
-	return session.New(engine.db)
+	return session.New(engine.db, engine.dialect)
 }
