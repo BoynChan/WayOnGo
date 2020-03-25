@@ -36,6 +36,8 @@ func jsonEncode(buf *bytes.Buffer, v reflect.Value) error {
 		_, _ = fmt.Fprintf(buf, "%d", v.Int())
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		_, _ = fmt.Fprintf(buf, "%d", v.Uint())
+	case reflect.Float32, reflect.Float64:
+		_, _ = fmt.Fprintf(buf, "%.3f", v.Float())
 	case reflect.String:
 		_, _ = fmt.Fprintf(buf, "%q", v.String())
 	case reflect.Ptr:
@@ -56,8 +58,7 @@ func jsonEncode(buf *bytes.Buffer, v reflect.Value) error {
 		for i := 0; i < v.NumField(); i++ {
 			if i > 0 {
 				buf.WriteByte(',')
-			}
-			// jsonEncode the key
+			} // jsonEncode the key
 			fmt.Fprintf(buf, "\"%s\":", v.Type().Field(i).Name)
 			// jsonEncode the value
 			if err := jsonEncode(buf, v.Field(i)); err != nil {
