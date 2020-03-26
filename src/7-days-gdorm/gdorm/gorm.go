@@ -5,6 +5,7 @@ import (
 	"7-days-gdorm/gdorm/log"
 	"7-days-gdorm/gdorm/session"
 	"database/sql"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // Author:Boyn

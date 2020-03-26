@@ -1,4 +1,4 @@
-package main
+package test
 
 import (
 	"7-days-gdorm/gdorm/clause"

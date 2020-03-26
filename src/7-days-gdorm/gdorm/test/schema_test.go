@@ -1,7 +1,8 @@
-package schema
+package test
 
 import (
 	"7-days-gdorm/gdorm/dialect"
+	schema2 "7-days-gdorm/gdorm/schema"
 	"fmt"
 	"testing"
 )
@@ -9,15 +10,10 @@ import (
 //Author: Boyn
 //Date: 2020/3/25
 
-type User struct {
-	Name string `gdorm:"PRIMARY KEY"`
-	Age  int
-}
-
 var TestDial, _ = dialect.GetDialect("sqlite3")
 
 func TestParse(t *testing.T) {
-	schema := Parse(&User{}, TestDial)
+	schema := schema2.Parse(&User{}, TestDial)
 	if schema.Name != "User" || len(schema.Fields) != 2 {
 		t.Fail()
 	}

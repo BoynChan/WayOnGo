@@ -1,7 +1,6 @@
-package main
+package test
 
 import (
-	"7-days-gdorm/gdorm"
 	"fmt"
 	"testing"
 )
@@ -9,13 +8,8 @@ import (
 //Author: Boyn
 //Date: 2020/3/25
 
-type User struct {
-	Name string `gdorm:"PRIMARY KEY"`
-	Age  int
-}
-
 func TestSession_CreateTable(t *testing.T) {
-	engine, _ := gdorm.NewEngine("sqlite3", "/Users/chenzhanpeng/Code/Go/LearningGo/src/7-days-gdorm/gdorm/gee.db")
+	engine := getEngine()
 	defer engine.Close()
 	s := engine.NewSession()
 	s.Model(&User{})
