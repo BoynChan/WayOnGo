@@ -2,6 +2,7 @@ package session
 
 import (
 	"7-days-gdorm/gdorm/clause"
+	"errors"
 	"reflect"
 )
 
@@ -100,4 +101,40 @@ func (s *Session) Count() (int64, error) {
 		return 0, err
 	}
 	return tmp, nil
+}
+
+// limit $n
+func (s *Session) Limit(num int) *Session {
+	s.clause.Set(clause.LIMIT, num)
+	return s
+}
+
+// WHERE $field1 = $value1 ...
+// we can use desc to write the base sentence like Name = ? and Age = ?
+// and use args to define the value like Jack , 11 ...
+func (s *Session) Where(desc string, args ...interface{}) *Session {
+	var vars []interface{}
+	s.clause.Set(clause.WHERE, append(append(vars, desc), args...)...)
+	return s
+}
+
+// OrderBy $field. if we need to define the order, we can just add ASC or DESC behind the $field
+func (s *Session) OrderBy(desc string) *Session {
+	s.clause.Set(clause.ORDERBY, desc)
+	return s
+}
+
+// only return the first record in sql return value
+// we should input a Ptr value in this function
+func (s *Session) First(value interface{}) error {
+	dest := reflect.Indirect(reflect.ValueOf(value))
+	destSlice := reflect.New(reflect.SliceOf(dest.Type())).Elem()
+	if err := s.Limit(1).Find(destSlice.Addr().Interface()); err != nil {
+		return err
+	}
+	if destSlice.Len() == 0 {
+		return errors.New("NOT FOUND")
+	}
+	dest.Set(destSlice.Index(0))
+	return nil
 }

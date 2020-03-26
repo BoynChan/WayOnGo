@@ -56,10 +56,20 @@ func TestSessionFind(t *testing.T) {
 
 func TestSessionUpdate(t *testing.T) {
 	s := testRecordInit(t)
-	affected, err := s.Update("Name", "Jack", "Age", 11)
+	affected, err := s.Where("Name = ?", "Jack").Update("Age", 11)
 	if err != nil {
 		log.Error(err)
 		t.Fail()
 	}
 	log.Info(affected)
+}
+
+func TestSessionCount(t *testing.T) {
+	s := testRecordInit(t)
+	count, err := s.Count()
+	if err != nil {
+		log.Error(err)
+		t.Fail()
+	}
+	fmt.Println(count)
 }
