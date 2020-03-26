@@ -21,6 +21,9 @@ const (
 	LIMIT
 	WHERE
 	ORDERBY
+	UPDATE
+	DELETE
+	COUNT
 )
 
 // use Set function to bind the value of sql sentence

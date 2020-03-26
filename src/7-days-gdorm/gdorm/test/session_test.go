@@ -1,6 +1,7 @@
 package test
 
 import (
+	"7-days-gdorm/gdorm/log"
 	"7-days-gdorm/gdorm/session"
 	"fmt"
 	"testing"
@@ -51,4 +52,14 @@ func TestSessionFind(t *testing.T) {
 		t.Fail()
 	}
 	fmt.Println(users)
+}
+
+func TestSessionUpdate(t *testing.T) {
+	s := testRecordInit(t)
+	affected, err := s.Update("Name", "Jack", "Age", 11)
+	if err != nil {
+		log.Error(err)
+		t.Fail()
+	}
+	log.Info(affected)
 }
