@@ -19,11 +19,11 @@ type Field struct {
 // 包含model是对象本身,name是表名,fields与fieldNames记录所有的字段和列名
 // fieldMap记录字段名和field的映射关系
 type Schema struct {
-	Model      interface{}
-	Name       string
-	Fields     []*Field
-	FieldNames []string
-	fieldMap   map[string]*Field
+	Model      interface{}       // 解析的对象本身
+	Name       string            // 表名
+	Fields     []*Field          // 表字段属性
+	FieldNames []string          // 表字段名
+	fieldMap   map[string]*Field // 字段名fieldNames与字段属性fields的映射
 }
 
 func (schema *Schema) GetField(name string) *Field {
@@ -56,4 +56,16 @@ func Parse(dest interface{}, d dialect.Dialect) *Schema {
 		}
 	}
 	return schema
+}
+
+// this function is to export every field value in dest
+// dest must be a struct, also means that the struct type of schema.model is the same struct as dest
+// the most important things is this function can convert struct value in the field order so that we can get the value from return value just by index
+func (schema *Schema) RecordValues(dest interface{}) []interface{} {
+	destValue := reflect.Indirect(reflect.ValueOf(dest))
+	var fieldValues []interface{}
+	for _, field := range schema.Fields {
+		fieldValues = append(fieldValues, destValue.FieldByName(field.Name).Interface())
+	}
+	return fieldValues
 }
