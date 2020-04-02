@@ -3,6 +3,7 @@
 *.png
 *.log
 /src/golang.org/
+/src/google.golang.org/
 /src/gopkg.in/
 /src/github.com/
 /pkg
