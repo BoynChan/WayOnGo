@@ -14,11 +14,11 @@ func main() {
 		log.Fatal("dialing:", err)
 	}
 
-	var reply string
-	err = client.Hello("hello", &reply)
+	var reply String
+	err = client.Hello(String{Value:"Hello"}, &reply)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(reply)
+	fmt.Println(reply.Value)
 }

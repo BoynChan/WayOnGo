@@ -1,6 +1,6 @@
 syntax = "proto3";
 package main;
-
+option go_package = "src/main/Protubuf;main";
 message Student{
     string name =1 ;
     bool male = 2;

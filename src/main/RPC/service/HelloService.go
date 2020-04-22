@@ -8,13 +8,13 @@ import "net/rpc"
 const HelloServiceName = "path/to/pkg.HelloService"
 
 type HelloServiceInterface interface {
-	Hello(request string, reply *string) error
+	Hello(request String, reply *String) error
 }
 
 type HelloService struct{}
 
-func (p *HelloService) Hello(request string, reply *string) error {
-	*reply = "hello:" + request
+func (p *HelloService) Hello(request String, reply *String) error {
+	reply.Value = "hello:" + request.Value
 	return nil
 }
 

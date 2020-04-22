@@ -1,6 +1,8 @@
 package main
 
-import "net/rpc"
+import (
+	"net/rpc"
+)
 
 //Author: Boyn
 //Date: 2020/4/2
@@ -8,14 +10,14 @@ import "net/rpc"
 const HelloServiceName = "path/to/pkg.HelloService"
 
 type HelloServiceInterface interface {
-	Hello(request string, reply *string) error
+	Hello(request String, reply *String) error
 }
 
 type HelloServiceClient struct {
 	*rpc.Client
 }
 
-func (h *HelloServiceClient) Hello(request string, reply *string) error {
+func (h *HelloServiceClient) Hello(request String, reply *String) error {
 	return h.Client.Call(HelloServiceName+".Hello", request, reply)
 }
 
